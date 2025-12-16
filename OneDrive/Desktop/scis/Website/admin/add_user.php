@@ -122,7 +122,7 @@
                 </div>
                 <div id="error-message" class="text-red-500 text-sm px-6 py-3"></div>
                 <div class="bg-gray-50 border-t border-gray-300 px-6 py-3 flex justify-end">
-                    <button type="submit" class="bg-brandBlue text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-800 transition">Save User</button>
+                    <button type="submit" class="bg-brandBlue text-white px-6 py-2 rounded-md font-semibold">Save User</button>
                 </div>
             </form>
         </main>

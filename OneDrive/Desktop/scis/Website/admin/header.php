@@ -1,4 +1,8 @@
-<?php session_start(); ?>
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <header class="bg-white shadow-sm py-4 px-8 flex justify-between items-center sticky top-0 z-40">
     <div>
         <h1 class="text-xl font-bold text-black">Zamboanga City OSCA</h1>

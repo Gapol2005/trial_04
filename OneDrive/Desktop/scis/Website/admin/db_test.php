@@ -69,6 +69,44 @@
                     </div>
                 </div>
 
+                <!-- New API Test Sections -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Archives API Test -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Archives API Test</h2>
+                        <button id="testArchivesApi" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Test Archives API</button>
+                        <pre id="archivesApiResponse" class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-x-auto"></pre>
+                    </div>
+
+                    <!-- Accounts API Test -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Accounts API Test</h2>
+                        <button id="testAccountsApi" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Test Accounts API</button>
+                        <pre id="accountsApiResponse" class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-x-auto"></pre>
+                    </div>
+
+                    <!-- ID Printing API Test -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">ID Printing API Test</h2>
+                        <button id="testIdPrintingApi" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Test ID Printing API</button>
+                        <pre id="idPrintingApiResponse" class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-x-auto"></pre>
+                    </div>
+
+                    <!-- Complaints API Test -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Complaints API Test</h2>
+                        <button id="testComplaintsApi" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Test Complaints API</button>
+                        <pre id="complaintsApiResponse" class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-x-auto"></pre>
+                    </div>
+
+                    <!-- Registration API Test -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Registration API Test</h2>
+                        <button id="testRegistrationApi" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Test Registration API</button>
+                        <pre id="registrationApiResponse" class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-x-auto"></pre>
+                    </div>
+                </div>
+
                 <div id="api-response-display" class="mt-8 p-4 bg-gray-100 rounded-lg border border-gray-300 hidden">
                     <h3 class="text-xl font-bold mb-2">API Response:</h3>
                     <pre class="whitespace-pre-wrap text-gray-800" id="api-response-content"></pre>
@@ -230,6 +268,111 @@
                     statusDiv.classList.add('bg-red-100', 'text-red-800');
                     statusDiv.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Applications API - Network Error: ${error.message}`;
                     showErrorModal('Network error during Applications API Test: ' + error.message, false, false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            });
+
+            // Test Archives API
+            document.getElementById('testArchivesApi').addEventListener('click', async function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.remove('hidden');
+                const endpoint = '../api/archives/list.php';
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    displayApiResponse('archivesApiResponse', data, 'Archives API');
+                } catch (error) {
+                    const statusDiv = document.getElementById('archivesApiResponse');
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.classList.remove('bg-green-100', 'text-green-800');
+                    statusDiv.classList.add('bg-red-100', 'text-red-800');
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Archives API - Network Error: ${error.message}`;
+                    showErrorModal('Network error during Archives API Test: ' + error.message, false, false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            });
+
+            // Test Accounts API
+            document.getElementById('testAccountsApi').addEventListener('click', async function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.remove('hidden');
+                const endpoint = '../api/users/list.php';
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    displayApiResponse('accountsApiResponse', data, 'Accounts API');
+                } catch (error) {
+                    const statusDiv = document.getElementById('accountsApiResponse');
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.classList.remove('bg-green-100', 'text-green-800');
+                    statusDiv.classList.add('bg-red-100', 'text-red-800');
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Accounts API - Network Error: ${error.message}`;
+                    showErrorModal('Network error during Accounts API Test: ' + error.message, false, false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            });
+
+            // Test ID Printing API
+            document.getElementById('testIdPrintingApi').addEventListener('click', async function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.remove('hidden');
+                const endpoint = '../api/id_printing/list.php';
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    displayApiResponse('idPrintingApiResponse', data, 'ID Printing API');
+                } catch (error) {
+                    const statusDiv = document.getElementById('idPrintingApiResponse');
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.classList.remove('bg-green-100', 'text-green-800');
+                    statusDiv.classList.add('bg-red-100', 'text-red-800');
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle mr-2"></i> ID Printing API - Network Error: ${error.message}`;
+                    showErrorModal('Network error during ID Printing API Test: ' + error.message, false, false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            });
+
+            // Test Complaints API
+            document.getElementById('testComplaintsApi').addEventListener('click', async function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.remove('hidden');
+                const endpoint = '../api/complaints/list.php';
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    displayApiResponse('complaintsApiResponse', data, 'Complaints API');
+                } catch (error) {
+                    const statusDiv = document.getElementById('complaintsApiResponse');
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.classList.remove('bg-green-100', 'text-green-800');
+                    statusDiv.classList.add('bg-red-100', 'text-red-800');
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Complaints API - Network Error: ${error.message}`;
+                    showErrorModal('Network error during Complaints API Test: ' + error.message, false, false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            });
+
+            // Test Registration API
+            document.getElementById('testRegistrationApi').addEventListener('click', async function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.remove('hidden');
+                const endpoint = '../api/seniors/list.php';
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    displayApiResponse('registrationApiResponse', data, 'Registration API');
+                } catch (error) {
+                    const statusDiv = document.getElementById('registrationApiResponse');
+                    statusDiv.classList.remove('hidden');
+                    statusDiv.classList.remove('bg-green-100', 'text-green-800');
+                    statusDiv.classList.add('bg-red-100', 'text-red-800');
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Registration API - Network Error: ${error.message}`;
+                    showErrorModal('Network error during Registration API Test: ' + error.message, false, false);
                 } finally {
                     loadingOverlay.classList.add('hidden');
                 }

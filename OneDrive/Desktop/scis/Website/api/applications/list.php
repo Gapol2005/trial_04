@@ -73,46 +73,54 @@
         Response::error("Database query failed for applications count: " . $e->getMessage(), 500);
     }
 
-    try {
-        // Data query
-        $query = "SELECT a.*, 
-                CONCAT(s.first_name, ' ', s.last_name) as senior_name,
-                s.osca_id, s.age, s.barangay_id,
-                b.name as barangay_name,
-                at.name as application_type,
-                CONCAT(submitted.first_name, ' ', submitted.last_name) as submitted_by_name,
-                CONCAT(verified.first_name, ' ', verified.last_name) as verified_by_name
-                FROM applications a
-                JOIN senior_citizens s ON a.senior_id = s.id
-                JOIN barangays b ON s.barangay_id = b.id
-                JOIN application_types at ON a.application_type_id = at.id
-                LEFT JOIN admin_users submitted ON a.submitted_by = submitted.id
-                LEFT JOIN admin_users verified ON a.verified_by = verified.id
-                $where
-                ORDER BY 
-                    CASE 
-                    WHEN a.status = 'Draft' THEN 1
-                    WHEN a.status = 'Submitted' THEN 2
-                    WHEN a.status = 'For Verification' THEN 3
-                    WHEN a.status = 'Verified' THEN 4
-                    WHEN a.status = 'For Printing' THEN 5
-                    ELSE 6
-                    END,
-                    a.submission_date DESC,
-                    a.created_at DESC
-                LIMIT :limit OFFSET :offset";
+ try {
+    // Data query
+    $query = "SELECT a.*, 
+            CONCAT(s.first_name, ' ', s.last_name) as senior_name,
+            s.osca_id, s.barangay_id,
+            b.name as barangay_name,
+            at.name as application_type,
+            CONCAT(submitted.first_name, ' ', submitted.last_name) as submitted_by_name,
+            CONCAT(verified.first_name, ' ', verified.last_name) as verified_by_name
+            FROM applications a
+            JOIN senior_citizens s ON a.senior_id = s.id
+            JOIN barangays b ON s.barangay_id = b.id
+            JOIN application_types at ON a.application_type_id = at.id
+            LEFT JOIN admin_users submitted ON a.submitted_by = submitted.id
+            LEFT JOIN admin_users verified ON a.verified_by = verified.id
+            $where
+            ORDER BY 
+                CASE 
+                WHEN a.status = 'Draft' THEN 1
+                WHEN a.status = 'Submitted' THEN 2
+                WHEN a.status = 'For Verification' THEN 3
+                WHEN a.status = 'Verified' THEN 4
+                WHEN a.status = 'For Printing' THEN 5
+                ELSE 6
+                END,
+                a.submission_date DESC,
+                a.created_at DESC
+            LIMIT :limit_val OFFSET :offset_val";
 
-        $stmt = $db->prepare($query);
-        // We need to re-create params_to_bind for this query as it includes limit and offset
-        $data_query_params = $params_to_bind; 
-        $data_query_params[':limit'] = $limit;
-        $data_query_params[':offset'] = $offset;
-
-        $stmt->execute($data_query_params); // Execute with the array of parameters
-        $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        Response::error("Database query failed for applications data: " . $e->getMessage(), 500);
+    $stmt = $db->prepare($query);
+    
+    $param_index = 1;
+    // Bind parameters from the WHERE clause
+    foreach ($params_to_bind as $value) {
+        $type = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+        $stmt->bindValue($param_index++, $value, $type);
     }
+    
+    // Bind LIMIT and OFFSET explicitly as integers using named parameters
+    $stmt->bindParam(':limit_val', $limit, PDO::PARAM_INT);
+    $stmt->bindParam(':offset_val', $offset, PDO::PARAM_INT);
+    
+    $stmt->execute();
+    $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
+    Response::paginated($applications, $page, $limit, $total, "Applications retrieved");
+    
+} catch (PDOException $e) {
+    Response::error("Database query failed for applications: " . $e->getMessage(), 500);
+}
     Response::paginated($applications, $page, $limit, $total, "Applications retrieved");
