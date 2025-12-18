@@ -214,6 +214,33 @@
             }
             
             // ==================================================
+            // REVIVE STATUS UPDATE (Unmark as deceased)
+            // ==================================================
+            else if ($update_type === 'revive') {
+                $old_values['status'] = [
+                    'is_deceased' => $senior['is_deceased'],
+                    'is_active' => $senior['is_active'],
+                    'deceased_date' => $senior['deceased_date']
+                ];
+                
+                $query = "UPDATE senior_citizens SET 
+                        is_deceased = 0,
+                        is_active = 1,
+                        deceased_date = NULL
+                        WHERE id = :id";
+                $stmt = $db->prepare($query);
+                $stmt->execute([
+                    ':id' => $senior_id
+                ]);
+                
+                $new_values['status'] = [
+                    'is_deceased' => 0,
+                    'is_active' => 1,
+                    'deceased_date' => null
+                ];
+            }
+            
+            // ==================================================
             // GENERAL INFORMATION UPDATE
             // ==================================================
             else if ($update_type === 'general' && isset($data->updates)) {

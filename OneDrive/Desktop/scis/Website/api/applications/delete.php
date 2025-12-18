@@ -16,6 +16,10 @@
     try {
         $db->beginTransaction();
 
+        // First, set application_id to NULL in id_printing_queue to avoid foreign key constraint
+        $stmt = $db->prepare('UPDATE id_printing_queue SET application_id = NULL WHERE application_id = ?');
+        $stmt->execute([$id]);
+
         // Remove application documents
         $stmt = $db->prepare('DELETE FROM application_documents WHERE application_id = ?');
         $stmt->execute([$id]);

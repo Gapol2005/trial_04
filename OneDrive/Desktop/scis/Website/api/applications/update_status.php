@@ -57,28 +57,62 @@ try {
         case 'Approved':
             // If there is no linked senior yet, attempt to create one from applicant_payload
             if (empty($app['senior_id'])) {
-                // Load applicant payload from column or notes
-                $appPayload = null;
+                // Load and normalize applicant payload from column or notes
+                $payloadRaw = null;
                 if (!empty($app['applicant_payload'])) {
-                    $appPayload = $app['applicant_payload'];
+                    $payloadRaw = $app['applicant_payload'];
                 } elseif (!empty($app['notes']) && strpos($app['notes'], '[APPLICANT_PAYLOAD]') !== false) {
                     $parts = explode('[APPLICANT_PAYLOAD]', $app['notes']);
-                    $appPayload = end($parts);
+                    $payloadRaw = end($parts);
                 }
 
-                if (!$appPayload) {
+                if (!$payloadRaw) {
                     Response::error('No applicant payload found to create senior record', 400);
                 }
 
-                $payloadArr = json_decode($appPayload, true);
-                if (!$payloadArr) Response::error('Invalid applicant payload JSON', 400);
+                // Ensure $payloadArr is an associative array regardless of storage format
+                if (is_array($payloadRaw)) {
+                    $payloadArr = $payloadRaw;
+                } else {
+                    $payloadArr = json_decode($payloadRaw, true);
+                }
+                // Debug log raw payload for troubleshooting malformed drafts
+                try {
+                    $logDir = __DIR__ . '/../../logs/';
+                    if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
+                    $logFile = $logDir . 'app_payload_debug.log';
+                    $entry = date('Y-m-d H:i:s') . " | APP_ID:" . $application_id . " | RAW_PAYLOAD:" . (is_string($payloadRaw) ? $payloadRaw : json_encode($payloadRaw)) . "\n";
+                    @file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
+                } catch (Exception $e) { /* non-fatal */ }
+                if (!is_array($payloadArr)) Response::error('Invalid applicant payload JSON', 400);
 
-                $personal = $payloadArr['personal_info'] ?? null;
-                $contact_info = $payloadArr['contact_info'] ?? null;
-                $family_members = $payloadArr['family_members'] ?? [];
-                $target_sectors = $payloadArr['target_sectors'] ?? [];
+                // Normalize personal_info: accept payload.personal_info or top-level personal keys
+                $personal = [];
+                if (isset($payloadArr['personal_info'])) {
+                    $personal = (array)$payloadArr['personal_info'];
+                }
+                // merge top-level personal keys if present (some clients store directly)
+                $topKeys = ['first_name','middle_name','last_name','extension','birthdate','gender_id','barangay_id','educational_attainment_id','monthly_salary','occupation','other_skills','photo_path','thumbmark_verified'];
+                foreach ($topKeys as $k) {
+                    if (empty($personal[$k]) && isset($payloadArr[$k])) $personal[$k] = $payloadArr[$k];
+                }
 
-                if (!$personal) Response::error('Applicant personal info missing', 400);
+                // contact, family, sectors
+                $contact_info = isset($payloadArr['contact_info']) ? (array)$payloadArr['contact_info'] : [];
+                $family_members = isset($payloadArr['family_members']) && is_array($payloadArr['family_members']) ? $payloadArr['family_members'] : [];
+                $target_sectors = isset($payloadArr['target_sectors']) && is_array($payloadArr['target_sectors']) ? $payloadArr['target_sectors'] : [];
+
+                // Debug log normalized personal info
+                try {
+                    $logFile = __DIR__ . '/../../logs/app_payload_debug.log';
+                    $entry = date('Y-m-d H:i:s') . " | APP_ID:" . $application_id . " | NORMALIZED_PERSONAL:" . json_encode($personal) . "\n";
+                    @file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
+                } catch (Exception $e) { /* non-fatal */ }
+
+                // basic validation
+                if (empty($personal['first_name']) || empty($personal['last_name']) || empty($personal['birthdate']) || empty($personal['barangay_id'])) {
+                    Response::error('Applicant personal info missing required fields (first_name, last_name, birthdate, barangay_id)', 400);
+                }
 
                 // Duplicate check
                 $dupQ = "SELECT id, osca_id FROM senior_citizens WHERE TRIM(LOWER(first_name)) = TRIM(LOWER(:first))
@@ -124,24 +158,24 @@ try {
                 $ist = $db->prepare($ins);
                 $ist->execute([
                     ':osca_id' => $osca_id,
-                    ':first_name' => $personal['first_name'] ?? $personal->first_name ?? null,
-                    ':middle_name' => $personal['middle_name'] ?? $personal->middle_name ?? null,
-                    ':last_name' => $personal['last_name'] ?? $personal->last_name ?? null,
-                    ':extension' => $personal['extension'] ?? $personal->extension ?? null,
-                    ':birthdate' => $personal['birthdate'] ?? $personal->birthdate ?? null,
-                    ':gender_id' => $personal['gender_id'] ?? $personal->gender_id ?? null,
-                    ':barangay_id' => $personal['barangay_id'] ?? $personal->barangay_id ?? null,
+                    ':first_name' => $personal['first_name'] ?? $app['first_name'] ?? '',
+                    ':middle_name' => $personal['middle_name'] ?? $app['middle_name'] ?? '',
+                    ':last_name' => $personal['last_name'] ?? $app['last_name'] ?? '',
+                    ':extension' => $personal['extension'] ?? $app['extension'] ?? null,
+                    ':birthdate' => $personal['birthdate'] ?? $app['birthdate'] ?? null,
+                    ':gender_id' => $personal['gender_id'] ?? $app['gender_id'] ?? null,
+                    ':barangay_id' => $personal['barangay_id'] ?? $app['barangay_id'] ?? null,
                     ':branch_id' => $auth->getBranchId(),
                     ':contact_id' => $contact_id,
-                    ':education' => $personal['educational_attainment_id'] ?? $personal->educational_attainment_id ?? null,
-                    ':salary' => $personal['monthly_salary'] ?? $personal->monthly_salary ?? null,
-                    ':occupation' => $personal['occupation'] ?? $personal->occupation ?? null,
-                    ':skills' => $personal['other_skills'] ?? $personal->other_skills ?? null,
-                    ':socioeconomic' => $personal['socioeconomic_status_id'] ?? $personal->socioeconomic_status_id ?? null,
-                    ':mobility' => $personal['mobility_level_id'] ?? $personal->mobility_level_id ?? null,
+                    ':education' => $personal['educational_attainment_id'] ?? $app['educational_attainment_id'] ?? null,
+                    ':salary' => $personal['monthly_salary'] ?? $app['monthly_salary'] ?? null,
+                    ':occupation' => $personal['occupation'] ?? $app['occupation'] ?? null,
+                    ':skills' => $personal['other_skills'] ?? $app['other_skills'] ?? null,
+                    ':socioeconomic' => $personal['socioeconomic_status_id'] ?? $app['socioeconomic_status_id'] ?? null,
+                    ':mobility' => $personal['mobility_level_id'] ?? $app['mobility_level_id'] ?? null,
                     ':registered_by' => $auth->getUserId(),
-                    ':photo' => $personal['photo_path'] ?? null,
-                    ':thumbmark' => isset($personal['thumbmark_verified']) ? 1 : 0
+                    ':photo' => $personal['photo_path'] ?? $app['photo_path'] ?? null,
+                    ':thumbmark' => !empty($personal['thumbmark_verified']) || !empty($app['thumbmark_verified']) ? 1 : 0
                 ]);
                 $new_senior_id = $db->lastInsertId();
 

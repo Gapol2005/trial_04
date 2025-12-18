@@ -39,10 +39,21 @@
     }
 
     if ($search) {
-        $where_clauses[] = "(s.first_name LIKE :search 
-                            OR s.last_name LIKE :search 
-                            OR s.osca_id LIKE :search)";
-        $params_to_bind[':search'] = '%' . $search . '%';
+        // Check if search is numeric (could be ID)
+        $isNumeric = is_numeric($search);
+        if ($isNumeric) {
+            $where_clauses[] = "(s.first_name LIKE :search 
+                                OR s.last_name LIKE :search 
+                                OR s.osca_id LIKE :search
+                                OR s.id = :search_id)";
+            $params_to_bind[':search'] = '%' . $search . '%';
+            $params_to_bind[':search_id'] = (int)$search;
+        } else {
+            $where_clauses[] = "(s.first_name LIKE :search 
+                                OR s.last_name LIKE :search 
+                                OR s.osca_id LIKE :search)";
+            $params_to_bind[':search'] = '%' . $search . '%';
+        }
     }
 
     if ($barangay) {
@@ -99,7 +110,7 @@
         $query = "SELECT s.id, s.osca_id, s.first_name, s.middle_name, s.last_name, 
             s.extension, TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) AS age, s.birthdate, g.name as gender, b.name as barangay_name,
             br.name as branch, rs.name as status, s.registration_date,
-            c.mobile_number, c.email
+            c.mobile_number, c.email, s.is_active, s.is_deceased
             FROM senior_citizens s
             LEFT JOIN genders g ON s.gender_id = g.id
             LEFT JOIN barangays b ON s.barangay_id = b.id

@@ -6,41 +6,55 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Application Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="font-sans">
+<body class="font-sans bg-gray-50">
 <?php include 'sidebar.php'; ?>
 <div class="ml-64 p-8">
     <div class="flex items-center justify-center">
-        <div class="w-full max-w-4xl">
-            <div id="app-card" class="bg-white rounded-xl shadow-xl p-6 relative">
+        <div class="w-full max-w-5xl">
+            <div id="app-card" class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 relative">
                 <div id="duplicate-banner" class="hidden absolute top-4 left-6 right-6 bg-green-50 border border-green-200 text-green-800 rounded px-4 py-2 flex items-center gap-3">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path></svg>
                     <div>This Person Has No Duplicates in the System<br><small class="text-xs">Please Check Requirements for Verification.</small></div>
                 </div>
 
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-xl font-bold text-indigo-700">Application Details</h3>
+                    <div class="flex items-center gap-3">
+                        <a href="registration_category.php" class="text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8 flex items-center justify-center transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </a>
+                        <h3 class="text-xl font-bold text-indigo-700">Application Details</h3>
+                    </div>
                     <div class="flex items-center gap-2">
-                        <button id="print-btn" class="px-3 py-2 border rounded bg-white hover:bg-gray-50">📇 Print Profile</button>
-                        <button id="download-btn" class="px-3 py-2 border rounded bg-white hover:bg-gray-50">⬇️ Download PDF</button>
+                        <button id="print-btn" class="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i> Print
+                        </button>
+                        <button id="download-btn" class="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> Download
+                        </button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="md:col-span-1 flex flex-col items-center gap-3">
-                        <div class="w-28 h-28 rounded-full overflow-hidden bg-gray-100">
+                    <div class="md:col-span-1 flex flex-col items-center gap-4">
+                        <div class="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-indigo-100 to-indigo-200 border-4 border-indigo-50 shadow-lg">
                             <img id="profile-pic" src="../img/default-avatar.png" class="w-full h-full object-cover" alt="profile">
                         </div>
                         <div class="text-center">
-                            <div id="profile-name" class="font-semibold text-lg"></div>
-                            <div id="profile-osca" class="text-sm text-gray-600"></div>
+                            <div id="profile-name" class="font-bold text-lg text-gray-900"></div>
+                            <div id="profile-osca" class="text-sm text-indigo-600 font-medium mt-1"></div>
                         </div>
                     </div>
 
                     <div class="md:col-span-2">
-                        <div class="bg-gray-50 border rounded p-4 mb-4">
-                            <h4 class="text-sm font-bold text-indigo-700 mb-2">PERSONAL INFORMATION</h4>
+                        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-lg p-5 mb-4 shadow-sm">
+                            <h4 class="text-sm font-bold text-indigo-700 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-user"></i> PERSONAL INFORMATION
+                            </h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-800">
                                 <div>
                                     <div class="text-xs text-gray-500">FULL NAME</div>
@@ -71,18 +85,31 @@
                             </div>
                         </div>
 
-                        <div class="bg-white border rounded p-4 mb-4">
-                            <h4 class="text-sm font-bold text-indigo-700 mb-2">UPLOADED REQUIREMENTS</h4>
+                        <div class="bg-white border border-gray-200 rounded-lg p-5 mb-4 shadow-sm">
+                            <h4 class="text-sm font-bold text-indigo-700 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-file-upload"></i> UPLOADED REQUIREMENTS
+                            </h4>
                             <div id="docs-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm"></div>
                         </div>
 
-                        <div class="bg-white border rounded p-4 mb-4" id="family-section">
-                            <h4 class="text-sm font-bold text-indigo-700 mb-2">FAMILY COMPOSITION AND ASSOCIATION</h4>
+                        <div class="bg-white border border-gray-200 rounded-lg p-5 mb-4 shadow-sm" id="family-section">
+                            <h4 class="text-sm font-bold text-indigo-700 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-users"></i> FAMILY COMPOSITION
+                            </h4>
                             <div id="family-grid" class="text-sm text-gray-800"></div>
                         </div>
 
-                        <div class="bg-white border rounded p-4">
-                            <h4 class="text-sm font-bold text-indigo-700 mb-2">ATTESTED BY</h4>
+                        <div class="bg-white border border-gray-200 rounded-lg p-5 mb-4 shadow-sm" id="association-section">
+                            <h4 class="text-sm font-bold text-indigo-700 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-sitemap"></i> ASSOCIATION / SPECIAL CATEGORIES
+                            </h4>
+                            <div id="association-grid" class="text-sm text-gray-800"></div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                            <h4 class="text-sm font-bold text-indigo-700 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-certificate"></i> ATTESTED BY
+                            </h4>
                             <div class="grid grid-cols-2 gap-2 text-sm text-gray-800">
                                 <div>
                                     <div class="text-xs text-gray-500">REGISTRATION DATE</div>
@@ -111,9 +138,13 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end mt-6 gap-2">
-                    <button id="continue-btn" class="bg-white border border-gray-300 text-gray-800 px-4 py-2 rounded hidden">Continue / Edit</button>
-                    <button id="approve-btn" class="bg-indigo-800 text-white px-6 py-2 rounded hidden">Approve</button>
+                <div class="flex justify-end mt-8 gap-3 pt-6 border-t border-gray-200">
+                    <button id="continue-btn" class="bg-white border-2 border-indigo-600 text-indigo-700 px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-50 transition hidden flex items-center gap-2">
+                        <i class="fa-solid fa-edit"></i> Continue / Edit
+                    </button>
+                    <button id="approve-btn" class="bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-800 transition shadow-md hidden flex items-center gap-2">
+                        <i class="fa-solid fa-check-circle"></i> Approve
+                    </button>
                 </div>
             </div>
         </div>
@@ -136,7 +167,9 @@
         const app = json.data;
 
         // populate header/profile
-        const fullName = (app.senior_name || (app.first_name + ' ' + app.last_name)).trim();
+        const safeFirst = app.first_name || '';
+        const safeLast = app.last_name || '';
+        const fullName = (app.senior_name || (safeFirst + ' ' + safeLast)).trim();
         document.getElementById('profile-name').textContent = fullName || '';
         document.getElementById('profile-osca').textContent = app.osca_id ? ('OSCA ID: ' + app.osca_id) : '';
         document.getElementById('pi-fullname').textContent = fullName || '';
@@ -159,16 +192,27 @@
         const docTypeLabels = {
             '1': 'Proof of Age',
             '2': 'Barangay Certification / Residency',
-            '3': 'Comelec ID / Certification',
-            '4': 'Senior Picture'
+            '3': 'Senior Photo',
+            '4': 'Senior Photo',
+            '6': 'Comelec ID / Certification'
         };
+        
+        // Find senior photo document for profile picture
+        let seniorPhotoPath = null;
         (app.documents || []).forEach(d => {
+            // Check if this is a senior photo (document_type_id 3 or 4)
+            if (String(d.document_type_id) === '3' || String(d.document_type_id) === '4') {
+                if (!seniorPhotoPath && d.file_path) {
+                    seniorPhotoPath = d.file_path;
+                }
+            }
+            
             const btn = document.createElement('a');
             btn.href = d.file_path ? ('../' + d.file_path) : '#';
             btn.target = '_blank';
-            btn.className = 'px-3 py-2 border rounded text-sm text-center block bg-white hover:bg-gray-50';
+            btn.className = 'px-4 py-3 border border-gray-300 rounded-lg text-sm text-center block bg-white hover:bg-indigo-50 hover:border-indigo-300 transition shadow-sm';
             const label = docTypeLabels[String(d.document_type_id)] || d.original_filename || 'Document';
-            btn.textContent = label;
+            btn.innerHTML = `<i class="fa-solid fa-file-pdf text-red-500 mr-2"></i>${label}`;
             docsGrid.appendChild(btn);
         });
 
@@ -187,8 +231,33 @@
             familyGrid.innerHTML = '<p class="text-gray-500 italic">No family members recorded</p>';
         }
 
-        // Profile picture
-        if (app.photo_path) document.getElementById('profile-pic').src = '../' + app.photo_path;
+        // Association / Target sectors
+        const assocGrid = document.getElementById('association-grid');
+        if (app.target_sectors && app.target_sectors.length > 0) {
+            let html = '<ul class="space-y-2">';
+            app.target_sectors.forEach((ts, idx) => {
+                // ts may be object from senior_target_sectors join or simple strings from payload
+                let label = '';
+                if (typeof ts === 'string') label = ts;
+                else if (ts.sector_name) label = ts.sector_name + (ts.other_specification ? (' - ' + ts.other_specification) : '');
+                else if (ts.sector_code) label = ts.sector_code + (ts.other_specification ? (' - ' + ts.other_specification) : '');
+                else if (ts.name) label = ts.name;
+                else label = JSON.stringify(ts);
+                html += `<li><strong>Category ${idx + 1}:</strong> ${label}</li>`;
+            });
+            html += '</ul>';
+            assocGrid.innerHTML = html;
+        } else {
+            assocGrid.innerHTML = '<p class="text-gray-500 italic">No association / categories recorded</p>';
+        }
+
+        // Profile picture - prioritize uploaded senior photo document, then fallback to photo_path
+        const profilePic = document.getElementById('profile-pic');
+        if (seniorPhotoPath) {
+            profilePic.src = '../' + seniorPhotoPath;
+        } else if (app.photo_path) {
+            profilePic.src = '../' + app.photo_path;
+        }
 
         // Duplicate banner (placeholder logic)
         // If API provides a duplicates field, show accordingly. For now, show only if app.duplicates === 0

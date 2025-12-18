@@ -1,64 +1,71 @@
-<?php include 'auth_check.php'; ?>
+<?php 
+include 'auth_check.php'; 
+$current_page = basename($_SERVER['PHP_SELF']); 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zamboanga City OSCA - Lost/Damage</title>
+    <title>Lost/Damaged ID - OSCA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dashboardBlue: '#1a008e', 
+                        'osca-text': '#1a008e',
+                        'osca-bg': '#f3f4f6',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="../../css/style.css">
 </head>
-<body class="inter-body text-gray-700 flex flex-col min-h-screen">
+<body class="bg-osca-bg font-sans flex text-gray-800">
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="spinner"></div>
     </div>
 
-    <header class="bg-white border-b border-gray-200 py-3 px-4 md:px-8 flex justify-between items-center sticky top-0 z-20">
-        <div class="flex items-center gap-4">
-            <button onclick="window.history.back()" class="text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8 flex items-center justify-center transition">
-                <i class="fa-solid fa-chevron-left text-sm"></i>
-            </button>
-            <div>
-                <h1 id="page-title" class="font-bold text-sm md:text-base leading-tight text-black">Lost/Damaged ID Replacement</h1>
-                <p class="text-[11px] md:text-xs text-gray-500 font-medium">Office of Senior Citizens Affairs</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="text-right hidden sm:block leading-tight">
-                <p class="text-sm font-bold text-black">Space1000</p>
-                <p class="text-[10px] text-gray-500 font-semibold uppercase">Social Worker Coordinator</p>
-            </div>
-            <div class="h-9 w-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-800 text-lg">
-                <i class="fa-regular fa-user text-xl"></i>
-            </div>
-        </div>
-    </header>
+    <?php include 'sidebar.php'; ?>
 
-    <main class="max-w-6xl mx-auto p-4 md:p-8 w-full flex-grow fade-in">
-        <div class="flex flex-col md:flex-row gap-6 mb-8 items-start">
-            <div class="flex-grow">
-                <h2 class="text-2xl font-bold brand-blue-text">Lost/ Damage</h2>
-                <p class="text-sm text-gray-600">Replace Lost or Damaged Senior Citizen ID</p>
-            </div>
-            <div class="flex items-center gap-4 w-full md:w-auto">
-                <label class="font-bold text-black text-sm md:text-base hidden md:block" for="application_type_id">Reason for replacement:</label>
-                <div class="relative">
-                    <select id="application_type_id" name="application_type_id" class="appearance-none border border-gray-300 rounded-md px-4 py-2 w-56 text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 pr-8">
-                        <!-- Options will be populated by JS -->
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <i class="fa-solid fa-chevron-down text-xs"></i>
+    <div class="ml-64 w-full min-h-screen flex flex-col">
+        <?php include 'header.php'; ?>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <div class="bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100">
+                <div class="flex flex-col md:flex-row gap-6 mb-6 items-start">
+                    <div class="flex-grow">
+                        <h2 class="text-3xl font-bold text-gray-900">Lost/Damaged ID Replacement</h2>
+                        <p class="text-gray-600 mt-1">Replace Lost or Damaged Senior Citizen ID</p>
+                    </div>
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <label class="font-bold text-gray-800 text-sm md:text-base hidden md:block" for="application_type_id">Reason for replacement:</label>
+                        <div class="relative">
+                            <select id="application_type_id" name="application_type_id" class="appearance-none border border-gray-300 rounded-md px-4 py-2.5 w-64 text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-dashboardBlue pr-8 font-medium">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6">
-            <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                <h3 class="font-bold brand-blue-text text-base">Senior Citizen Details</h3>
-            </div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-dashboardBlue text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-user text-indigo-700"></i> Senior Citizen Details
+                    </h3>
+                </div>
             <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
                 <div>
                     <label for="osca_id" class="block text-sm font-medium text-gray-700 mb-1">OSCA ID</label>
@@ -83,23 +90,31 @@
             <input type="hidden" id="senior-id" name="senior_id">
             <input type="hidden" id="selected-application-type-id" name="application_type_id">
 
-            <div class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6">
-                <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                    <h3 class="font-bold brand-blue-text text-base">Application Details</h3>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-dashboardBlue text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-file-alt text-indigo-700"></i> Application Details
+                    </h3>
                 </div>
                 <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
-                    <div>
+                    <div class="md:col-span-2">
                         <label for="application_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
-                        <textarea id="application_notes" name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-brandBlue focus:border-brandBlue text-sm"></textarea>
+                        <textarea id="application_notes" name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-dashboardBlue focus:border-dashboardBlue text-sm"></textarea>
                     </div>
                 </div>
             </div>
-            <div id="form-error-message" class="text-red-500 text-sm mt-4"></div>
-            <div class="bg-gray-50 border-t border-gray-300 px-6 py-3 flex justify-end">
-                <button type="submit" class="bg-brandBlue text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-800 transition">Submit Application</button>
+            <div id="form-error-message" class="text-red-500 text-sm mt-4 mb-4"></div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex justify-end gap-3">
+                <a href="senior_citizen_list.php" class="px-6 py-2.5 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-50 transition">
+                    <i class="fa-solid fa-times mr-2"></i> Cancel
+                </a>
+                <button type="submit" class="bg-dashboardBlue text-white px-6 py-2.5 rounded-md font-semibold text-sm hover:bg-indigo-900 transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Application
+                </button>
             </div>
         </form>
-    </main>
+        </main>
+    </div>
 
     <script>
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -133,6 +148,9 @@
             applicationTypeSelect.addEventListener('change', function() {
                 document.getElementById('selected-application-type-id').value = this.value;
             });
+            
+            // Ensure form is visible
+            lostDamagedForm.style.display = 'block';
 
             loadingOverlay.classList.add('hidden');
         });
@@ -173,10 +191,18 @@
             loadingOverlay.classList.remove('hidden');
 
             const formData = new FormData(this);
+            const applicationTypeId = applicationTypeSelect.value || formData.get('application_type_id');
+            
+            if (!applicationTypeId) {
+                showMessage('error', 'Validation Error', "Please select a reason for replacement.");
+                loadingOverlay.classList.add('hidden');
+                return;
+            }
+            
             const data = {
                 senior_id: formData.get('senior_id'),
-                application_type_id: formData.get('application_type_id'), // This will be the value from the hidden input
-                notes: formData.get('notes')
+                application_type_id: applicationTypeId,
+                notes: formData.get('notes') || null
             };
 
             try {
@@ -198,6 +224,13 @@
                 loadingOverlay.classList.add('hidden');
             }
         });
+        
+        function showMessage(type, title, message, redirectUrl = null) {
+            alert(`${title}: ${message}`);
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            }
+        }
     </script>
 </body>
 </html>

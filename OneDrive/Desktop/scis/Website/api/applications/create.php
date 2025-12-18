@@ -294,34 +294,42 @@
 
             // Helper: determine document_type_id based on input field name and available doc types
             function infer_doc_type_id($fieldName, $docTypes, $defaultId) {
-                $map = [
-                    'proof_of_age' => ['age','birth','birth certificate','birth'],
-                    'barangay_certification' => ['barangay','certificate','residency','resid'],
-                    'comelec_id' => ['comelec','voter','comelec'],
-                    'senior_picture' => ['picture','photo','image']
+                $fname = strtolower($fieldName);
+                $checks = [
+                    'barangay' => ['barangay'],
+                    'birth' => ['birth', 'age', 'proof'],
+                    'senior' => ['senior', 'photo', 'picture', 'image'],
+                    'comelec' => ['comelec', 'voter'],
+                    'thumb' => ['thumb', 'mark']
                 ];
 
-                $fname = strtolower($fieldName);
-                // direct key match
-                foreach ($map as $key => $keywords) {
-                    if (strpos($fname, $key) !== false) {
-                        // try to find a document type whose name contains any keyword
-                        foreach ($docTypes as $dt) {
-                            $lname = strtolower($dt['name']);
-                            foreach ($keywords as $kw) {
-                                if (strpos($lname, $kw) !== false) return $dt['id'];
+                foreach ($checks as $key => $keywords) {
+                    foreach ($keywords as $kw) {
+                        if (strpos($fname, $kw) !== false) {
+                            foreach ($docTypes as $dt) {
+                                if (strpos(strtolower($dt['name']), $kw) !== false) return $dt['id'];
                             }
                         }
                     }
                 }
 
-                // fallback: try to match any doc type name with field name tokens
                 foreach ($docTypes as $dt) {
-                    $lname = strtolower($dt['name']);
-                    if (strpos($lname, $fname) !== false) return $dt['id'];
+                    $dtName = strtolower($dt['name']);
+                    if (strpos($fname, $dtName) !== false) return $dt['id'];
                 }
 
                 return $defaultId;
+            }
+
+            function infer_doc_label($fieldName) {
+                $fname = strtolower($fieldName);
+                if (strpos($fname, 'barangay') !== false) return 'barangay_certificate';
+                if (strpos($fname, 'birth') !== false || strpos($fname, 'age') !== false || strpos($fname, 'proof') !== false) return 'birth_certificate';
+                if (strpos($fname, 'senior') !== false || strpos($fname, 'photo') !== false || strpos($fname, 'picture') !== false) return 'senior_photo';
+                if (strpos($fname, 'comelec') !== false || strpos($fname, 'voter') !== false) return 'comelec_id';
+                if (strpos($fname, 'thumb') !== false || strpos($fname, 'mark') !== false) return 'thumbmark';
+                $lbl = preg_replace('/[^a-z0-9_\-]/', '_', preg_replace('/\s+/', '_', $fname));
+                return $lbl ?: 'uploaded_document';
             }
 
             foreach ($_FILES as $fieldName => $fileInfo) {
@@ -335,18 +343,34 @@
                             $ext = pathinfo($original, PATHINFO_EXTENSION);
                             $newName = time() . '_' . bin2hex(random_bytes(4)) . ($ext ? '.' . $ext : '');
                             $target = $uploadDir . $newName;
-                            if (move_uploaded_file($fileInfo['tmp_name'][$i], $target)) {
-                                $relativePath = 'uploads/applications/' . $newName;
-                                $docTypeId = infer_doc_type_id($fieldName, $docTypes, $default_doc_type_id);
-                                $doc_stmt->execute([
-                                    $application_id,
-                                    $docTypeId,
-                                    $relativePath,
-                                    $original,
-                                    $fileInfo['size'][$i] ?? null,
-                                    $auth->getUserId()
-                                ]);
-                            }
+                                if (move_uploaded_file($fileInfo['tmp_name'][$i], $target)) {
+                                    $relativePath = 'uploads/applications/' . $newName;
+                                    $docTypeId = infer_doc_type_id($fieldName, $docTypes, $default_doc_type_id);
+                                    $label = infer_doc_label($fieldName);
+                                    $displayName = $label . ($ext ? '.' . $ext : '');
+                                    // remove previous document of same type for this application (replace behaviour)
+                                    try {
+                                        $sel = $db->prepare('SELECT file_path FROM application_documents WHERE application_id = ? AND document_type_id = ?');
+                                        $sel->execute([$application_id, $docTypeId]);
+                                        $oldDocs = $sel->fetchAll(PDO::FETCH_ASSOC);
+                                        foreach ($oldDocs as $od) {
+                                            if (!empty($od['file_path'])) {
+                                                $oldPath = __DIR__ . '/../../' . $od['file_path'];
+                                                if (file_exists($oldPath)) @unlink($oldPath);
+                                            }
+                                        }
+                                        $del = $db->prepare('DELETE FROM application_documents WHERE application_id = ? AND document_type_id = ?');
+                                        $del->execute([$application_id, $docTypeId]);
+                                    } catch (Exception $ex) { /* non-fatal */ }
+                                    $doc_stmt->execute([
+                                        $application_id,
+                                        $docTypeId,
+                                        $relativePath,
+                                        $displayName,
+                                        $fileInfo['size'][$i] ?? null,
+                                        $auth->getUserId()
+                                    ]);
+                                }
                         }
                     }
                 } else {
@@ -355,18 +379,33 @@
                         $ext = pathinfo($original, PATHINFO_EXTENSION);
                         $newName = time() . '_' . bin2hex(random_bytes(4)) . ($ext ? '.' . $ext : '');
                         $target = $uploadDir . $newName;
-                        if (move_uploaded_file($fileInfo['tmp_name'], $target)) {
-                            $relativePath = 'uploads/applications/' . $newName;
-                            $docTypeId = infer_doc_type_id($fieldName, $docTypes, $default_doc_type_id);
-                            $doc_stmt->execute([
-                                $application_id,
-                                $docTypeId,
-                                $relativePath,
-                                $original,
-                                $fileInfo['size'] ?? null,
-                                $auth->getUserId()
-                            ]);
-                        }
+                            if (move_uploaded_file($fileInfo['tmp_name'], $target)) {
+                                $relativePath = 'uploads/applications/' . $newName;
+                                $docTypeId = infer_doc_type_id($fieldName, $docTypes, $default_doc_type_id);
+                                $label = infer_doc_label($fieldName);
+                                $displayName = $label . ($ext ? '.' . $ext : '');
+                                try {
+                                    $sel = $db->prepare('SELECT file_path FROM application_documents WHERE application_id = ? AND document_type_id = ?');
+                                    $sel->execute([$application_id, $docTypeId]);
+                                    $oldDocs = $sel->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($oldDocs as $od) {
+                                        if (!empty($od['file_path'])) {
+                                            $oldPath = __DIR__ . '/../../' . $od['file_path'];
+                                            if (file_exists($oldPath)) @unlink($oldPath);
+                                        }
+                                    }
+                                    $del = $db->prepare('DELETE FROM application_documents WHERE application_id = ? AND document_type_id = ?');
+                                    $del->execute([$application_id, $docTypeId]);
+                                } catch (Exception $ex) { /* non-fatal */ }
+                                $doc_stmt->execute([
+                                    $application_id,
+                                    $docTypeId,
+                                    $relativePath,
+                                    $displayName,
+                                    $fileInfo['size'] ?? null,
+                                    $auth->getUserId()
+                                ]);
+                            }
                     }
                 }
             }

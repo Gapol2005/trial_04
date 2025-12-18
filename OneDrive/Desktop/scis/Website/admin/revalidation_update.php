@@ -1,72 +1,78 @@
-<?php include 'auth_check.php'; ?>
+<?php 
+include 'auth_check.php'; 
+$current_page = basename($_SERVER['PHP_SELF']); 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zamboanga City OSCA - Revalidation</title>
+    <title>Revalidation / Update - OSCA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dashboardBlue: '#1a008e', 
+                        'osca-text': '#1a008e',
+                        'osca-bg': '#f3f4f6',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="../../css/style.css">
 </head>
-<body class="inter-body text-gray-700 flex flex-col min-h-screen">
+<body class="bg-osca-bg font-sans flex text-gray-800">
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="spinner"></div>
     </div>
 
-    <header class="bg-white border-b border-gray-200 py-3 px-4 md:px-8 flex justify-between items-center sticky top-0 z-20">
-        <div class="flex items-center gap-4">
-            <button onclick="window.history.back()" class="text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8 flex items-center justify-center transition">
-                <i class="fa-solid fa-chevron-left text-sm"></i>
-            </button>
-            <div>
-                <h1 id="page-title" class="font-bold text-sm md:text-base leading-tight text-black">Senior Citizen Revalidation / Update</h1>
-                <p class="text-[11px] md:text-xs text-gray-500 font-medium">Office of Senior Citizens Affairs</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="text-right hidden sm:block leading-tight">
-                <p class="text-sm font-bold text-black">Space1000</p>
-                <p class="text-[10px] text-gray-500 font-semibold uppercase">Social Worker Coordinator</p>
-            </div>
-            <div class="h-9 w-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-800 text-lg">
-                <i class="fa-regular fa-user text-xl"></i>
-            </div>
-        </div>
-    </header>
+    <?php include 'sidebar.php'; ?>
 
-    <main class="max-w-6xl mx-auto p-4 md:p-8 w-full flex-grow fade-in">
-        <div class="flex flex-col md:flex-row gap-6 mb-8 items-start">
-            <div class="flex-grow">
-                <h2 class="text-2xl font-bold brand-blue-text">Revalidation</h2>
-                <p class="text-sm text-gray-600">Renew Senior Citizen ID</p>
-            </div>
-            <div class="flex items-center gap-4 w-full md:w-auto">
-                <label for="transaction_type" class="font-bold text-black text-sm md:text-base hidden md:block">Transaction Type:</label>
-                <div class="relative">
-                    <select id="transaction_type" class="appearance-none border border-gray-300 rounded-md px-4 py-2 w-56 text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 pr-8">
-                        <option value="revalidation">Revalidation</option>
-                        <option value="contact">Update Contact</option>
-                        <option value="address">Change Address</option>
-                        <option value="socioeconomic">Update Socioeconomic</option>
-                        <option value="deceased">Mark Deceased</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <i class="fa-solid fa-chevron-down text-xs"></i>
+    <div class="ml-64 w-full min-h-screen flex flex-col">
+        <?php include 'header.php'; ?>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <div class="bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100">
+                <div class="flex flex-col md:flex-row gap-6 mb-6 items-start">
+                    <div class="flex-grow">
+                        <h2 class="text-3xl font-bold text-gray-900">Revalidation / Update</h2>
+                        <p class="text-gray-600 mt-1">Renew Senior Citizen ID or update information</p>
+                    </div>
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <label for="transaction_type" class="font-bold text-gray-800 text-sm md:text-base hidden md:block">Transaction Type:</label>
+                        <div class="relative">
+                            <select id="transaction_type" class="appearance-none border border-gray-300 rounded-md px-4 py-2.5 w-64 text-gray-700 bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-dashboardBlue pr-8 font-medium">
+                                <option value="revalidation">Revalidation</option>
+                                <option value="contact">Update Contact</option>
+                                <option value="address">Change Address</option>
+                                <option value="socioeconomic">Update Socioeconomic</option>
+                                <option value="deceased">Mark Deceased</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
         <form id="revalidation-form">
             <input type="hidden" id="senior-id" name="id">
             <input type="hidden" id="contact-id" name="contact_id">
             <input type="hidden" id="update-type" name="update_type" value="revalidation">
 
-            <div class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6">
-                <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                    <h3 class="font-bold brand-blue-text text-base">Senior Citizen Details</h3>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-dashboardBlue text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-user text-indigo-700"></i> Senior Citizen Details
+                    </h3>
                 </div>
                 <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
                     <div>
@@ -93,9 +99,11 @@
             </div>
 
             <!-- Fields for Contact Update -->
-            <div id="contact-fields" class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6 hidden">
-                <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                    <h3 class="font-bold brand-blue-text text-base">Contact Information</h3>
+            <div id="contact-fields" class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 hidden">
+                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-dashboardBlue text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-phone text-indigo-700"></i> Contact Information
+                    </h3>
                 </div>
                 <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
                     <div>
@@ -114,9 +122,11 @@
             </div>
 
             <!-- Fields for Address Change -->
-            <div id="address-fields" class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6 hidden">
-                <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                    <h3 class="font-bold brand-blue-text text-base">Address Information</h3>
+            <div id="address-fields" class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 hidden">
+                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-dashboardBlue text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-map-marker-alt text-indigo-700"></i> Address Information
+                    </h3>
                 </div>
                 <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
                     <div>
@@ -137,9 +147,11 @@
             </div>
 
             <!-- Fields for Socioeconomic Update -->
-            <div id="socioeconomic-fields" class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6 hidden">
-                <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                    <h3 class="font-bold brand-blue-text text-base">Socioeconomic Details</h3>
+            <div id="socioeconomic-fields" class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 hidden">
+                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-dashboardBlue text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase text-indigo-700"></i> Socioeconomic Details
+                    </h3>
                 </div>
                 <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
                     <div>
@@ -176,9 +188,11 @@
             </div>
 
             <!-- Fields for Deceased Status -->
-            <div id="deceased-fields" class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6 hidden">
-                <div class="bg-gray-50 border-b border-gray-300 px-6 py-3">
-                    <h3 class="font-bold brand-blue-text text-base">Mark as Deceased</h3>
+            <div id="deceased-fields" class="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 hidden">
+                <div class="bg-gradient-to-r from-red-50 to-red-100 border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-red-700 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-cross text-red-700"></i> Mark as Deceased
+                    </h3>
                 </div>
                 <div class="px-6 py-5">
                     <div>
@@ -188,12 +202,18 @@
                 </div>
             </div>
 
-            <div id="form-error-message" class="text-red-500 text-sm mt-4"></div>
-            <div class="bg-gray-50 border-t border-gray-300 px-6 py-3 flex justify-end">
-                <button type="submit" class="bg-brandBlue text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-800 transition">Perform Update</button>
+            <div id="form-error-message" class="text-red-500 text-sm mt-4 mb-4"></div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex justify-end gap-3">
+                <a href="senior_citizen_list.php" class="px-6 py-2.5 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-50 transition">
+                    <i class="fa-solid fa-times mr-2"></i> Cancel
+                </a>
+                <button type="submit" class="bg-dashboardBlue text-white px-6 py-2.5 rounded-md font-semibold text-sm hover:bg-indigo-900 transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i> Perform Update
+                </button>
             </div>
         </form>
-    </main>
+        </main>
+    </div>
 
     <script>
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -209,7 +229,8 @@
         const deceasedFields = document.getElementById('deceased-fields');
 
         // Dropdowns
-        const genderSelect = document.getElementById('gender_id'); // Not directly used in form, but needed for details
+        // Note: gender is a text input, not a dropdown, so we'll fetch genders for lookup only
+        let gendersData = []; // Store genders data for gender text lookup
         const educationalAttainmentSelect = document.getElementById('educational_attainment_id');
         const socioeconomicStatusSelect = document.getElementById('socioeconomic_status_id');
         const mobilityLevelSelect = document.getElementById('mobility_level_id');
@@ -218,61 +239,151 @@
         document.addEventListener('DOMContentLoaded', async function() {
             loadingOverlay.classList.remove('hidden'); // Show spinner on page load
 
-            // Fetch data for dropdowns
-            await Promise.all([
-                fetchAndPopulateDropdown('../api/genders/list.php', genderSelect, 'Select Gender'),
-                fetchAndPopulateDropdown('../api/educational_attainment/list.php', educationalAttainmentSelect, 'Select Educational Attainment'),
-                fetchAndPopulateDropdown('../api/socioeconomic_statuses/list.php', socioeconomicStatusSelect, 'Select Socioeconomic Status'),
-                fetchAndPopulateDropdown('../api/mobility_levels/list.php', mobilityLevelSelect, 'Select Mobility Level'),
-                fetchAndPopulateDropdown('../api/barangays/list.php', addressBarangaySelect, 'Select Barangay') // For address change
-            ]).catch(error => {
-                showMessage('error', 'Fetch Error', "Failed to load form data. Please try again.");
+            // Set a timeout to prevent infinite loading (30 seconds)
+            const loadingTimeout = setTimeout(() => {
+                if (!loadingOverlay.classList.contains('hidden')) {
+                    loadingOverlay.classList.add('hidden');
+                    showMessage('error', 'Timeout Error', 'The page is taking too long to load. Please refresh and try again.');
+                    console.error('Page load timeout after 30 seconds');
+                }
+            }, 30000);
+
+            try {
+                // Fetch data for dropdowns (with null checks)
+                const dropdownPromises = [];
+                
+                // Fetch genders for lookup (not a dropdown, but needed for display)
+                dropdownPromises.push(
+                    fetch('../api/genders/list.php')
+                        .then(response => {
+                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                gendersData = data.data;
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error fetching genders:", error);
+                            // Continue even if genders fail
+                        })
+                );
+                
+                // Fetch other dropdowns only if elements exist
+                if (educationalAttainmentSelect) {
+                    dropdownPromises.push(fetchAndPopulateDropdown('../api/educational_attainment/list.php', educationalAttainmentSelect, 'Select Educational Attainment'));
+                }
+                if (socioeconomicStatusSelect) {
+                    dropdownPromises.push(fetchAndPopulateDropdown('../api/socioeconomic_statuses/list.php', socioeconomicStatusSelect, 'Select Socioeconomic Status'));
+                }
+                if (mobilityLevelSelect) {
+                    dropdownPromises.push(fetchAndPopulateDropdown('../api/mobility_levels/list.php', mobilityLevelSelect, 'Select Mobility Level'));
+                }
+                if (addressBarangaySelect) {
+                    dropdownPromises.push(fetchAndPopulateDropdown('../api/barangays/list.php', addressBarangaySelect, 'Select Barangay'));
+                }
+                
+                // Wait for dropdowns with timeout
+                await Promise.race([
+                    Promise.all(dropdownPromises),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Dropdown fetch timeout')), 15000))
+                ]).catch(error => {
+                    console.error("Error or timeout fetching dropdown data:", error);
+                    // Continue anyway - some dropdowns might have loaded
+                });
+            } catch (error) {
                 console.error("Error fetching dropdown data:", error);
-            });
+                // Continue anyway - we can still load senior details
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
             const seniorId = urlParams.get('id');
 
             if (seniorId) {
                 seniorIdInput.value = seniorId;
-                await fetchSeniorDetails(seniorId);
+                try {
+                    await fetchSeniorDetails(seniorId);
+                } catch (error) {
+                    console.error('Error fetching senior details:', error);
+                    // Error already handled in fetchSeniorDetails
+                }
             } else {
                 showMessage('error', 'Error', "No Senior ID provided for revalidation/update.");
                 loadingOverlay.classList.add('hidden');
+                clearTimeout(loadingTimeout);
                 return;
             }
 
             transactionTypeSelect.addEventListener('change', showHideFields);
             showHideFields(); // Initial display
 
+            clearTimeout(loadingTimeout);
             loadingOverlay.classList.add('hidden'); // Hide spinner after initial data load
         });
 
         async function fetchAndPopulateDropdown(apiEndpoint, selectElement, defaultOptionText) {
-            const response = await fetch(apiEndpoint);
-            const data = await response.json();
-            if (data.success) {
-                selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
-                data.data.forEach(item => {
-                    selectElement.innerHTML += `<option value="${item.id}">${item.name || item.level || item.category}</option>`;
-                });
-            } else {
-                showMessage('error', 'Fetch Error', `Error fetching data from ${apiEndpoint}: ${data.message}`);
-                console.error(`Error fetching data from ${apiEndpoint}:`, data.message);
+            if (!selectElement) {
+                console.warn(`Select element not found for ${apiEndpoint}`);
+                return;
+            }
+            
+            try {
+                const response = await fetch(apiEndpoint);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.success && Array.isArray(data.data)) {
+                    selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                    data.data.forEach(item => {
+                        selectElement.innerHTML += `<option value="${item.id}">${item.name || item.level || item.category}</option>`;
+                    });
+                } else {
+                    console.error(`Error fetching data from ${apiEndpoint}:`, data.message || 'Unknown error');
+                }
+            } catch (error) {
+                console.error(`Error fetching dropdown from ${apiEndpoint}:`, error);
+                // Don't show message for every failed dropdown, just log it
             }
         }
 
         async function fetchSeniorDetails(id) {
             loadingOverlay.classList.remove('hidden');
+            
+            // Add timeout for the fetch request (20 seconds)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+            
             try {
-                const response = await fetch(`../api/seniors/details.php?id=${id}`);
+                const response = await fetch(`../api/seniors/details.php?id=${id}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 if (data.success) {
-                    const senior = data.data;
-                    document.getElementById('osca_id').value = senior.osca_id;
-                    document.getElementById('full_name').value = `${senior.first_name} ${senior.middle_name ? senior.middle_name + ' ' : ''}${senior.last_name} ${senior.extension ? senior.extension : ''}`;
-                    document.getElementById('birthdate').value = senior.birthdate;
-                    document.getElementById('gender').value = genderSelect.querySelector(`option[value="${senior.gender_id}"]`).textContent;
+                    // API returns data.data.senior, not data.data directly
+                    const senior = data.data.senior || data.data;
+                    
+                    if (!senior) {
+                        throw new Error('Senior data not found in response');
+                    }
+                    
+                    document.getElementById('osca_id').value = senior.osca_id || '';
+                    document.getElementById('full_name').value = `${senior.first_name || ''} ${senior.middle_name ? senior.middle_name + ' ' : ''}${senior.last_name || ''} ${senior.extension ? senior.extension : ''}`.trim();
+                    document.getElementById('birthdate').value = senior.birthdate || '';
+                    
+                    // Set gender text from gendersData lookup
+                    if (senior.gender_id && gendersData.length > 0) {
+                        const genderObj = gendersData.find(g => g.id == senior.gender_id);
+                        document.getElementById('gender').value = genderObj ? (genderObj.name || '') : (senior.gender || '');
+                    } else if (senior.gender) {
+                        document.getElementById('gender').value = senior.gender;
+                    }
 
                     // Store contact_id if available for updates
                     if (senior.contact_id) {
@@ -313,13 +424,26 @@
                     }
 
                 } else {
-                    showMessage('error', 'Fetch Error', data.message);
+                    showMessage('error', 'Fetch Error', data.message || 'Failed to fetch senior details');
                 }
             } catch (error) {
-                showMessage('error', 'Fetch Error', 'An unexpected error occurred while fetching details.');
-                console.error('Error:', error);
+                if (error.name === 'AbortError') {
+                    showMessage('error', 'Timeout Error', 'The request took too long. Please check your connection and try again.');
+                } else {
+                    showMessage('error', 'Fetch Error', 'An unexpected error occurred while fetching details. ' + (error.message || ''));
+                }
+                console.error('Error fetching senior details:', error);
             } finally {
                 loadingOverlay.classList.add('hidden');
+            }
+        }
+        
+        // Define showMessage function if not already present
+        function showMessage(type, title, message, redirectUrl = null) {
+            // Use a more user-friendly alert or modal
+            alert(`${title}: ${message}`);
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
             }
         }
 

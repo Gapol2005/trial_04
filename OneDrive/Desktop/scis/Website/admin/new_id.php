@@ -711,11 +711,11 @@
                 payload.notes = formData.get('notes') || null;
 
                 payload.personal_info = {
-                    first_name: formData.get('first_name'),
+                    first_name: formData.get('first_name') || null,
                     middle_name: formData.get('middle_name') || null,
-                    last_name: formData.get('last_name'),
+                    last_name: formData.get('last_name') || null,
                     extension: formData.get('extension') || null,
-                    birthdate: formData.get('birthdate'),
+                    birthdate: formData.get('birthdate') || null,
                     gender_id: formData.get('gender_id') ? parseInt(formData.get('gender_id')) : null,
                     barangay_id: formData.get('barangay_id') ? parseInt(formData.get('barangay_id')) : null,
                     educational_attainment_id: formData.get('educational_attainment_id') ? parseInt(formData.get('educational_attainment_id')) : null,
@@ -738,9 +738,9 @@
                 const familyMembers = [];
                 document.querySelectorAll('#family-container .member-card').forEach(member => {
                     const fm = {};
-                    fm.first_name = member.querySelector('[name="family_first_name[]"]').value;
+                    fm.first_name = member.querySelector('[name="family_first_name[]"]').value || null;
                     fm.middle_name = member.querySelector('[name="family_middle_name[]"]').value || null;
-                    fm.last_name = member.querySelector('[name="family_last_name[]"]').value;
+                    fm.last_name = member.querySelector('[name="family_last_name[]"]').value || null;
                     fm.extension = member.querySelector('[name="family_extension[]"]').value || null;
                     fm.relationship = member.querySelector('[name="family_relationship[]"]').value || null;
                     fm.age = member.querySelector('[name="family_age[]"]').value || null;
@@ -748,6 +748,20 @@
                     familyMembers.push(fm);
                 });
                 if (familyMembers.length > 0) payload.family_members = familyMembers;
+
+                // Collect target sectors (associations)
+                const targetSectors = [];
+                document.querySelectorAll('input[name="target_sector[]"]:checked').forEach(checkbox => {
+                    targetSectors.push(checkbox.value);
+                });
+                if (targetSectors.length > 0) payload.target_sectors = targetSectors;
+
+                // Collect sub-categories
+                const subCategories = [];
+                document.querySelectorAll('input[name="sub_category[]"]:checked').forEach(checkbox => {
+                    subCategories.push(checkbox.value);
+                });
+                if (subCategories.length > 0) payload.sub_categories = subCategories;
 
                 // Create FormData and append JSON payload + files
                 const applicationIdVal = document.getElementById('application-id').value;
@@ -807,11 +821,11 @@
                 payload.notes = formData.get('notes') || null;
 
                 payload.personal_info = {
-                    first_name: formData.get('first_name'),
+                    first_name: formData.get('first_name') || null,
                     middle_name: formData.get('middle_name') || null,
-                    last_name: formData.get('last_name'),
+                    last_name: formData.get('last_name') || null,
                     extension: formData.get('extension') || null,
-                    birthdate: formData.get('birthdate'),
+                    birthdate: formData.get('birthdate') || null,
                     gender_id: formData.get('gender_id') ? parseInt(formData.get('gender_id')) : null,
                     barangay_id: formData.get('barangay_id') ? parseInt(formData.get('barangay_id')) : null,
                     educational_attainment_id: formData.get('educational_attainment_id') ? parseInt(formData.get('educational_attainment_id')) : null,
@@ -831,9 +845,9 @@
                 const familyMembers = [];
                 document.querySelectorAll('#family-container .member-card').forEach(member => {
                     const fm = {};
-                    fm.first_name = member.querySelector('[name="family_first_name[]"]').value;
+                    fm.first_name = member.querySelector('[name="family_first_name[]"]').value || null;
                     fm.middle_name = member.querySelector('[name="family_middle_name[]"]').value || null;
-                    fm.last_name = member.querySelector('[name="family_last_name[]"]').value;
+                    fm.last_name = member.querySelector('[name="family_last_name[]"]').value || null;
                     fm.extension = member.querySelector('[name="family_extension[]"]').value || null;
                     fm.relationship = member.querySelector('[name="family_relationship[]"]').value || null;
                     fm.age = member.querySelector('[name="family_age[]"]').value || null;
@@ -841,6 +855,20 @@
                     familyMembers.push(fm);
                 });
                 if (familyMembers.length > 0) payload.family_members = familyMembers;
+
+                // Collect target sectors (associations)
+                const targetSectors = [];
+                document.querySelectorAll('input[name="target_sector[]"]:checked').forEach(checkbox => {
+                    targetSectors.push(checkbox.value);
+                });
+                if (targetSectors.length > 0) payload.target_sectors = targetSectors;
+
+                // Collect sub-categories
+                const subCategories = [];
+                document.querySelectorAll('input[name="sub_category[]"]:checked').forEach(checkbox => {
+                    subCategories.push(checkbox.value);
+                });
+                if (subCategories.length > 0) payload.sub_categories = subCategories;
 
                 const applicationIdVal = document.getElementById('application-id').value;
                 if (applicationIdVal) payload.application_id = parseInt(applicationIdVal);

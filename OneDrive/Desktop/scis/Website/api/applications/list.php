@@ -50,8 +50,21 @@
     }
 
     if ($status) {
-        $where_parts[] = "a.status = ?";
-        $params_to_bind[] = $status;
+        // Handle special status cases that include multiple statuses
+        if (strtolower($status) === 'completed') {
+            $where_parts[] = "a.status IN (?, ?, ?)";
+            $params_to_bind[] = 'Claimed';
+            $params_to_bind[] = 'Printed';
+            $params_to_bind[] = 'Ready for Release';
+        } elseif (strtolower($status) === 'pending') {
+            // Include both Pending and Draft statuses
+            $where_parts[] = "a.status IN (?, ?)";
+            $params_to_bind[] = 'Pending';
+            $params_to_bind[] = 'Draft';
+        } else {
+            $where_parts[] = "a.status = ?";
+            $params_to_bind[] = $status;
+        }
     }
 
     if ($type) {
