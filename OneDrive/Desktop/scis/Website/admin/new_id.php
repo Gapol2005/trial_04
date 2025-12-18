@@ -63,6 +63,7 @@
 
         <form id="senior-registration-form">
             <input type="hidden" id="senior-id" name="id">
+            <input type="hidden" id="application-id" name="application_id">
             <input type="hidden" id="contact-id" name="contact_id">
 
             <!-- Step 1: Personal Details -->
@@ -266,6 +267,7 @@
                         <div class="flex flex-col gap-2">
                             <input type="file" name="proof_of_age" class="w-full text-sm text-gray-500" required>
                             <p class="text-xs text-gray-500 italic mt-1">Upload birth certificate or any valid government ID showing date of birth</p>
+                            <div id="docs-proof-of-age" class="mt-2 grid grid-cols-3 gap-3"></div>
                         </div>
                     </div>
 
@@ -274,6 +276,7 @@
                         <div class="flex flex-col gap-2">
                             <input type="file" name="barangay_certification" class="w-full text-sm text-gray-500" required>
                             <p class="text-xs text-gray-500 italic mt-1">Certificate of Residency or Barangay Clearance from your barangay</p>
+                            <div id="docs-barangay-certification" class="mt-2 grid grid-cols-3 gap-3"></div>
                         </div>
                     </div>
 
@@ -282,13 +285,15 @@
                         <div class="flex flex-col gap-2">
                             <input type="file" name="comelec_id" class="w-full text-sm text-gray-500">
                             <p class="text-xs text-gray-500 italic mt-1">Voter's ID or certification (if available)</p>
+                            <div id="docs-comelec-id" class="mt-2 grid grid-cols-3 gap-3"></div>
                         </div>
                     </div>
 
                     <div class="border border-gray-300 rounded-xl p-6">
                         <h3 class="font-bold text-sm text-black mb-3">Senior Picture: <span class="text-orange-500">*</span></h3>
                         <div class="flex flex-col gap-2">
-                            <input type="file" name="senior_picture" class="w-full text-sm text-gray-500" required>
+                                <input type="file" name="senior_picture" class="w-full text-sm text-gray-500" required>
+                                <div id="docs-senior-picture" class="mt-2 grid grid-cols-3 gap-3"></div>
                         </div>
                     </div>
 
@@ -310,8 +315,11 @@
 
             <div class="flex justify-between mt-8">
                 <button type="button" id="prev-step-btn" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-md font-semibold text-sm hover:bg-gray-400 transition hidden">Previous</button>
-                <button type="button" id="next-step-btn" class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-700 transition">Next</button>
-                <button type="submit" id="submit-btn" class="bg-green-600 text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-green-700 transition hidden">Register Senior</button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="save-draft-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-yellow-600 transition">Save as Draft</button>
+                    <button type="button" id="next-step-btn" class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-700 transition">Next</button>
+                    <button type="submit" id="submit-btn" class="bg-green-600 text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-green-700 transition hidden">Register Senior</button>
+                </div>
             </div>
             <div id="form-error-message" class="text-red-500 text-sm mt-4"></div>
         </form>
@@ -353,9 +361,9 @@
 
             // Fetch data for dropdowns
             await Promise.all([
-                fetchAndPopulateDropdown('../api/genders/list.php', genderSelect, 'Select Gender'),
-                fetchAndPopulateDropdown('../api/educational_attainment/list.php', educationalAttainmentSelect, 'Select Educational Attainment'),
-                fetchAndPopulateDropdown('../api/barangays/list.php', barangaySelect, 'Select Barangay')
+                    fetchAndPopulateDropdown('../api/genders/list.php', genderSelect, 'Select Gender'),
+                    fetchAndPopulateDropdown('../api/educational_attainment/list.php', educationalAttainmentSelect, 'Select Educational Attainment'),
+                    fetchAndPopulateDropdown('../api/barangays/list.php', barangaySelect, 'Select Barangay')
             ]).catch(error => {
                 showMessage('error', 'Fetch Error', "Failed to load form data. Please try again.");
                 console.error("Error fetching dropdown data:", error);
@@ -363,8 +371,13 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const seniorId = urlParams.get('id');
+            const applicationId = urlParams.get('application_id');
 
-            if (seniorId) {
+            if (applicationId) {
+                formPageTitle.textContent = 'Edit Application';
+                document.getElementById('application-id').value = applicationId;
+                await fetchApplicationDetails(applicationId);
+            } else if (seniorId) {
                 formPageTitle.textContent = 'Edit Senior Citizen';
                 seniorIdInput.value = seniorId;
                 await fetchSeniorDetails(seniorId);
@@ -405,44 +418,149 @@
             }
         }
 
+        // Application types are chosen via Registration Category; no client fetch needed here.
+
         async function fetchSeniorDetails(id) {
             loadingOverlay.classList.remove('hidden');
             try {
                 const response = await fetch(`../api/seniors/details.php?id=${id}`);
                 const data = await response.json();
                 if (data.success) {
-                    const senior = data.data;
-                    document.getElementById('first_name').value = senior.first_name;
-                    document.getElementById('middle_name').value = senior.middle_name;
-                    document.getElementById('last_name').value = senior.last_name;
-                    document.getElementById('extension').value = senior.extension;
-                    document.getElementById('birthdate').value = senior.birthdate;
+                    // seniors/details.php may return a nested structure { senior: {...}, family_members: [...] }
+                    const senior = data.data && data.data.senior ? data.data.senior : data.data;
+                    document.getElementById('first_name').value = senior.first_name || '';
+                    document.getElementById('middle_name').value = senior.middle_name || '';
+                    document.getElementById('last_name').value = senior.last_name || '';
+                    document.getElementById('extension').value = senior.extension || '';
+                    document.getElementById('birthdate').value = senior.birthdate || '';
                     // compute age on client side from birthdate
                     computeAge();
-                    document.getElementById('gender_id').value = senior.gender_id;
+                    document.getElementById('gender_id').value = senior.gender_id || '';
 
                     // Contact info
                     if (senior.contact_id) {
                         contactIdInput.value = senior.contact_id;
-                        document.getElementById('mobile_number').value = senior.mobile_number;
-                        document.getElementById('telephone_number').value = senior.telephone_number;
-                        document.getElementById('house_number').value = senior.house_number;
-                        document.getElementById('street').value = senior.street;
+                        document.getElementById('mobile_number').value = data.data && data.data.senior ? (data.data.senior.mobile_number || '') : (senior.mobile_number || '');
+                        document.getElementById('telephone_number').value = data.data && data.data.senior ? (data.data.senior.telephone_number || '') : (senior.telephone_number || '');
+                        document.getElementById('house_number').value = data.data && data.data.senior ? (data.data.senior.house_number || '') : (senior.house_number || '');
+                        document.getElementById('street').value = data.data && data.data.senior ? (data.data.senior.street || '') : (senior.street || '');
                     }
-                    document.getElementById('barangay_id').value = senior.barangay_id;
+                    document.getElementById('barangay_id').value = senior.barangay_id || '';
 
                     // Socioeconomic
-                    document.getElementById('educational_attainment_id').value = senior.educational_attainment_id;
-                    document.getElementById('monthly_salary').value = senior.monthly_salary;
-                    document.getElementById('occupation').value = senior.occupation;
-                    document.getElementById('other_skills').value = senior.other_skills;
+                    document.getElementById('educational_attainment_id').value = senior.educational_attainment_id || '';
+                    document.getElementById('monthly_salary').value = senior.monthly_salary || '';
+                    document.getElementById('occupation').value = senior.occupation || '';
+                    document.getElementById('other_skills').value = senior.other_skills || '';
+
+                    // Populate family members if provided
+                    const family = data.data && data.data.family_members ? data.data.family_members : [];
+                    if (family && family.length > 0) {
+                        // clear existing family container
+                        familyContainer.innerHTML = '';
+                        family.forEach((fm, idx) => {
+                            addFamilyMember();
+                            const card = familyContainer.children[familyContainer.children.length - 1];
+                            card.querySelector('[name="family_first_name[]"]').value = fm.first_name || '';
+                            card.querySelector('[name="family_middle_name[]"]').value = fm.middle_name || '';
+                            card.querySelector('[name="family_last_name[]"]').value = fm.last_name || '';
+                            card.querySelector('[name="family_extension[]"]').value = fm.extension || '';
+                            card.querySelector('[name="family_relationship[]"]').value = fm.relationship || '';
+                            card.querySelector('[name="family_age[]"]').value = fm.age || '';
+                            card.querySelector('[name="family_salary[]"]').value = fm.monthly_salary || '';
+                        });
+                    }
 
                 } else {
-                    showMessage('error', 'Fetch Error', data.message);
+                    showMessage('error', 'Fetch Error', data.message || 'Failed to load senior details');
                 }
             } catch (error) {
                 showMessage('error', 'Fetch Error', 'An unexpected error occurred while fetching details.');
                 console.error('Error:', error);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        async function fetchApplicationDetails(applicationId) {
+            loadingOverlay.classList.remove('hidden');
+            try {
+                const response = await fetch(`../api/applications/details.php?id=${applicationId}`);
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    const text = await response.text();
+                    console.error('Failed to parse application details JSON:', text);
+                    showMessage('error', 'Fetch Error', 'Server returned invalid response: ' + text);
+                    return;
+                }
+                if (!data || !data.success) {
+                    showMessage('error', 'Fetch Error', (data && data.message) ? data.message : 'Failed to load application');
+                    return;
+                }
+                const app = data.data;
+                // If the application has a linked senior, load senior details (family, etc.)
+                if (app.senior_id) {
+                    seniorIdInput.value = app.senior_id;
+                    // fetch senior details to populate family and related fields
+                    await fetchSeniorDetails(app.senior_id);
+                }
+
+                // Populate personal/contact fields from application/senior data
+                document.getElementById('first_name').value = app.first_name || app.senior_first_name || '';
+                document.getElementById('middle_name').value = app.middle_name || app.senior_middle_name || '';
+                document.getElementById('last_name').value = app.last_name || app.senior_last_name || '';
+                document.getElementById('extension').value = app.extension || '';
+                if (app.birthdate) document.getElementById('birthdate').value = app.birthdate;
+                computeAge();
+                if (app.gender_id) document.getElementById('gender_id').value = app.gender_id;
+                if (app.barangay_id) document.getElementById('barangay_id').value = app.barangay_id;
+
+                // Contact overrides
+                if (app.contact_id) {
+                    contactIdInput.value = app.contact_id;
+                    document.getElementById('mobile_number').value = app.mobile_number || '';
+                    document.getElementById('telephone_number').value = app.telephone_number || '';
+                    document.getElementById('house_number').value = app.house_number || '';
+                    document.getElementById('street').value = app.street || '';
+                }
+
+                // Show existing uploaded documents in their respective field containers (if any)
+                // Map document_type_id to field containers
+                const docTypeMap = {
+                    '1': 'docs-proof-of-age',
+                    '2': 'docs-barangay-certification',
+                    '3': 'docs-comelec-id',
+                    '4': 'docs-senior-picture'
+                };
+                (app.documents || []).forEach(d => {
+                    const containerId = docTypeMap[String(d.document_type_id)];
+                    if (!containerId) return; // skip unknown types
+                    const el = document.getElementById(containerId);
+                    if (!el) return;
+                    const container = document.createElement('div');
+                    container.className = 'border p-2 rounded bg-white flex flex-col items-center';
+                    const link = document.createElement('a');
+                    link.href = d.file_path ? ('../' + d.file_path) : '#';
+                    link.target = '_blank';
+                    const img = document.createElement('img');
+                    img.src = d.file_path ? ('../' + d.file_path) : '../img/default-avatar.png';
+                    img.className = 'w-20 h-20 object-cover rounded';
+                    link.appendChild(img);
+                    const label = document.createElement('div');
+                    label.className = 'text-xs mt-1 text-gray-600 text-center';
+                    label.textContent = d.original_filename || d.file_path || 'Uploaded';
+                    container.appendChild(link);
+                    container.appendChild(label);
+                    el.appendChild(container);
+                });
+
+                // Notes
+                // If there are documents, list them in the Review step will show links via existing code
+            } catch (error) {
+                showMessage('error', 'Fetch Error', 'An unexpected error occurred while fetching application.');
+                console.error('Error fetching application:', error);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
@@ -586,19 +704,179 @@
             const formData = new FormData(form);
 
             try {
-                const response = await fetch('../api/seniors/save.php', {
-                    method: 'POST',
-                    body: formData
+                // Build payload object and send as multipart/form-data so files can be uploaded
+                const payload = {};
+                // Registration Category -> New ID: default application type id = 1
+                payload.application_type_id = 1;
+                payload.notes = formData.get('notes') || null;
+
+                payload.personal_info = {
+                    first_name: formData.get('first_name'),
+                    middle_name: formData.get('middle_name') || null,
+                    last_name: formData.get('last_name'),
+                    extension: formData.get('extension') || null,
+                    birthdate: formData.get('birthdate'),
+                    gender_id: formData.get('gender_id') ? parseInt(formData.get('gender_id')) : null,
+                    barangay_id: formData.get('barangay_id') ? parseInt(formData.get('barangay_id')) : null,
+                    educational_attainment_id: formData.get('educational_attainment_id') ? parseInt(formData.get('educational_attainment_id')) : null,
+                    monthly_salary: formData.get('monthly_salary') || null,
+                    occupation: formData.get('occupation') || null,
+                    other_skills: formData.get('other_skills') || null
+                };
+
+                // indicate this is a full submit (not a draft)
+                payload.is_draft = false;
+
+                payload.contact_info = {
+                    mobile_number: formData.get('contact[mobile_number]') || formData.get('mobile_number') || null,
+                    telephone_number: formData.get('contact[telephone_number]') || formData.get('telephone_number') || null,
+                    house_number: formData.get('contact[house_number]') || formData.get('house_number') || null,
+                    street: formData.get('contact[street]') || formData.get('street') || null,
+                    email: formData.get('contact[email]') || null
+                };
+
+                const familyMembers = [];
+                document.querySelectorAll('#family-container .member-card').forEach(member => {
+                    const fm = {};
+                    fm.first_name = member.querySelector('[name="family_first_name[]"]').value;
+                    fm.middle_name = member.querySelector('[name="family_middle_name[]"]').value || null;
+                    fm.last_name = member.querySelector('[name="family_last_name[]"]').value;
+                    fm.extension = member.querySelector('[name="family_extension[]"]').value || null;
+                    fm.relationship = member.querySelector('[name="family_relationship[]"]').value || null;
+                    fm.age = member.querySelector('[name="family_age[]"]').value || null;
+                    fm.monthly_salary = member.querySelector('[name="family_salary[]"]').value || null;
+                    familyMembers.push(fm);
                 });
-                const result = await response.json();
+                if (familyMembers.length > 0) payload.family_members = familyMembers;
+
+                // Create FormData and append JSON payload + files
+                const applicationIdVal = document.getElementById('application-id').value;
+                if (applicationIdVal) payload.application_id = parseInt(applicationIdVal);
+
+                const fd = new FormData();
+                fd.append('payload', JSON.stringify(payload));
+
+                // Append file inputs (if any) using their input `name` so server knows the document type
+                document.querySelectorAll('input[type="file"]').forEach(input => {
+                    const files = input.files;
+                    for (let i = 0; i < files.length; i++) {
+                        // use the input's name as the field key (e.g. proof_of_age, barangay_certification)
+                        fd.append(input.name, files[i], files[i].name);
+                    }
+                });
+
+                const endpoint = applicationIdVal ? '../api/applications/update.php' : '../api/applications/create.php';
+
+                const response = await fetch(endpoint, { method: 'POST', body: fd });
+                const text = await response.text();
+                let result = null;
+                try {
+                    result = JSON.parse(text);
+                } catch (err) {
+                    console.error('Non-JSON response on submit:', text);
+                    showMessage('error', 'Save Error', 'Server returned invalid response: ' + text);
+                    return;
+                }
+
                 if (result.success) {
-                    showMessage('success', 'Success', 'Senior citizen registered successfully!', 'senior_citizen_list.php');
+                    showMessage('success', 'Success', 'Application submitted successfully!', 'registration_category.php');
                 } else {
-                    showMessage('error', 'Save Error', result.message);
+                    showMessage('error', 'Save Error', result.message || 'Failed to create application');
                 }
             } catch (error) {
                 showMessage('error', 'Save Error', 'An unexpected error occurred.');
                 console.error('Error:', error);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        // Save as Draft handler
+        document.getElementById('save-draft-btn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            formErrorMessage.textContent = "";
+
+            // No validation for draft beyond basic last step
+            loadingOverlay.classList.remove('hidden');
+            const formData = new FormData(form);
+
+            try {
+                const payload = {};
+                payload.application_type_id = 1; // New ID
+                payload.is_draft = true;
+                payload.notes = formData.get('notes') || null;
+
+                payload.personal_info = {
+                    first_name: formData.get('first_name'),
+                    middle_name: formData.get('middle_name') || null,
+                    last_name: formData.get('last_name'),
+                    extension: formData.get('extension') || null,
+                    birthdate: formData.get('birthdate'),
+                    gender_id: formData.get('gender_id') ? parseInt(formData.get('gender_id')) : null,
+                    barangay_id: formData.get('barangay_id') ? parseInt(formData.get('barangay_id')) : null,
+                    educational_attainment_id: formData.get('educational_attainment_id') ? parseInt(formData.get('educational_attainment_id')) : null,
+                    monthly_salary: formData.get('monthly_salary') || null,
+                    occupation: formData.get('occupation') || null,
+                    other_skills: formData.get('other_skills') || null
+                };
+
+                payload.contact_info = {
+                    mobile_number: formData.get('contact[mobile_number]') || formData.get('mobile_number') || null,
+                    telephone_number: formData.get('contact[telephone_number]') || formData.get('telephone_number') || null,
+                    house_number: formData.get('contact[house_number]') || formData.get('house_number') || null,
+                    street: formData.get('contact[street]') || formData.get('street') || null,
+                    email: formData.get('contact[email]') || null
+                };
+
+                const familyMembers = [];
+                document.querySelectorAll('#family-container .member-card').forEach(member => {
+                    const fm = {};
+                    fm.first_name = member.querySelector('[name="family_first_name[]"]').value;
+                    fm.middle_name = member.querySelector('[name="family_middle_name[]"]').value || null;
+                    fm.last_name = member.querySelector('[name="family_last_name[]"]').value;
+                    fm.extension = member.querySelector('[name="family_extension[]"]').value || null;
+                    fm.relationship = member.querySelector('[name="family_relationship[]"]').value || null;
+                    fm.age = member.querySelector('[name="family_age[]"]').value || null;
+                    fm.monthly_salary = member.querySelector('[name="family_salary[]"]').value || null;
+                    familyMembers.push(fm);
+                });
+                if (familyMembers.length > 0) payload.family_members = familyMembers;
+
+                const applicationIdVal = document.getElementById('application-id').value;
+                if (applicationIdVal) payload.application_id = parseInt(applicationIdVal);
+
+                const fd = new FormData();
+                fd.append('payload', JSON.stringify(payload));
+
+                // Append files by input name
+                document.querySelectorAll('input[type="file"]').forEach(input => {
+                    const files = input.files;
+                    for (let i = 0; i < files.length; i++) {
+                        fd.append(input.name, files[i], files[i].name);
+                    }
+                });
+
+                const endpoint = applicationIdVal ? '../api/applications/update.php' : '../api/applications/create.php';
+
+                const response = await fetch(endpoint, { method: 'POST', body: fd });
+                const text = await response.text();
+                let result = null;
+                try {
+                    result = JSON.parse(text);
+                } catch (err) {
+                    console.error('Non-JSON response on draft save:', text);
+                    showMessage('error', 'Save Error', 'Server returned invalid response: ' + text);
+                    return;
+                }
+
+                if (result.success) {
+                    showMessage('success', 'Saved', 'Application saved as draft.', 'registration_category.php');
+                } else {
+                    showMessage('error', 'Save Error', result.message || 'Failed to save draft');
+                }
+            } catch (error) {
+                showMessage('error', 'Save Error', 'An unexpected error occurred while saving draft.');
+                console.error('Draft save error:', error);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }

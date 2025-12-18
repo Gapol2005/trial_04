@@ -23,6 +23,17 @@
         }
     }
 
+    // Validate senior exists to avoid FK constraint failures
+    try {
+        $chk = $db->prepare('SELECT id FROM senior_citizens WHERE id = ?');
+        $chk->execute([(int)$data->senior_id]);
+        if ($chk->rowCount() == 0) {
+            Response::error('Senior citizen not found', 404);
+        }
+    } catch (Exception $ex) {
+        Response::error('Failed to validate senior: ' . $ex->getMessage(), 500);
+    }
+
     // Generate application number
     $year = date('Y');
     $query = "SELECT MAX(CAST(SUBSTRING(application_number, -3) AS UNSIGNED)) as last_num 

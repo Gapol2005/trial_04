@@ -56,7 +56,7 @@ register_shutdown_function('shutdown_handler');
 
     // Data query
     $query = "SELECT s.id, s.osca_id, s.first_name, s.middle_name, s.last_name, 
-                    s.extension, s.birthdate, TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) AS age, g.name as gender, b.name as barangay,
+                    s.extension, s.birthdate, TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) AS age, g.name as gender, b.name as barangay_name,
                     br.name as branch, rs.name as status, s.registration_date
             FROM senior_citizens s
             LEFT JOIN genders g ON s.gender_id = g.id

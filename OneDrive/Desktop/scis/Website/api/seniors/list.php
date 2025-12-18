@@ -97,7 +97,7 @@
 
     // Data query
         $query = "SELECT s.id, s.osca_id, s.first_name, s.middle_name, s.last_name, 
-            s.extension, TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) AS age, s.birthdate, g.name as gender, b.name as barangay,
+            s.extension, TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) AS age, s.birthdate, g.name as gender, b.name as barangay_name,
             br.name as branch, rs.name as status, s.registration_date,
             c.mobile_number, c.email
             FROM senior_citizens s

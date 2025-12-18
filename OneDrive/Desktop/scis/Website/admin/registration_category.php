@@ -4,10 +4,10 @@
     </div>      <?php     // Sets the active page for sidebar highlighting     $current_page = basename($_SERVER['PHP_SELF']);     ?>     
  <?php include 'sidebar.php'; ?>      <div class="ml-64 w-full min-h-screen flex flex-col">                  <?php include 'header.php'; ?>          <main class="flex-1 p-8 overflow-y-auto">                          <div class="bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100">                                  <div class="mb-6">                     <h2 class="text-3xl font-bold text-gray-900">Registration Category</h2>                     <p class="text-gray-600 mt-1">Manage senior citizen ID applications and registrations</p>                 </div>                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">                     <a href="new_id.php" class="bg-dashboardBlue text-white py-3 px-4 rounded-md font-bold hover:bg-indigo-900 transition shadow-md flex items-center justify-center gap-2">                         <i class="fa-solid fa-plus"></i> New ID                     </a>                     <a href="revalidation_update.php" class="bg-dashboardBlue text-white py-3 px-4 rounded-md font-bold hover:bg-indigo-900 transition shadow-md flex items-center justify-center gap-2">                         Revalidation/Update                     </a>                     <a href="lost_damaged.php" class="bg-dashboardBlue text-white py-3 px-4 rounded-md font-bold hover:bg-indigo-900 transition shadow-md flex items-center justify-center gap-2">                         Lost/Damaged                     </a>                     <button class="bg-dashboardBlue text-white py-3 px-4 rounded-md font-bold hover:bg-indigo-900 transition shadow-md">                         Report                     </button>                 </div>              </div>              <div class="bg-white rounded-lg shadow-md p-6">                                  <h3 class="text-lg font-bold text-black mb-4">Application List</h3>                  <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">                                          <div class="flex items-center gap-2 w-full md:w-auto">                         <div class="relative w-full md:w-80">                             <span class="absolute inset-y-0 left-0 flex items-center pl-3">                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>                             </span>                             <input type="text" placeholder="Search by name" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-dashboardBlue text-sm">                         </div>                         <button class="p-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-600 transition" title="Refresh">                             <i class="fa-solid fa-rotate"></i>                         </button>                     </div>                      <div class="flex gap-2">                         <a href="senior_citizen_list.php" class="px-4 py-2 border border-gray-400 rounded text-sm font-medium hover:bg-gray-50 text-gray-700 transition">                             Senior Citizen List                         </a>                         <button class="px-4 py-2 border border-gray-400 rounded text-sm font-medium hover:bg-gray-50 text-gray-700 flex items-center gap-2 transition">                             <i class="fa-regular fa-file-excel text-green-600"></i> Export to Excel                         </button>                     </div>                 </div>                  <div class="flex flex-wrap items-center gap-2 mb-6 text-sm">                     <span class="text-gray-800 font-medium mr-1">Quick Filters:</span>                     <button class="bg-dashboardBlue text-white px-4 py-1 rounded-full text-xs font-medium shadow-sm">All</button>                     <button class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-xs font-medium hover:bg-gray-300 transition">Claimed</button>                     <button class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-xs font-medium hover:bg-gray-300 transition">Verified</button>                     <button class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-xs font-medium hover:bg-gray-300 transition">Printed</button>                     <button class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-xs font-medium hover:bg-gray-300 transition">Ready for Release</button>                     <button class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-xs font-medium hover:bg-gray-300 transition">Drafts</button>                 </div>             
      <div class="overflow-x-auto">                     <table class="w-full text-left border-collapse min-w-[900px]">                     
-    <thead>                             <tr class="text-black font-bold text-sm border-b border-gray-200">                                 <th class="pb-4 pl-2">Application ID</th>                                 <th class="pb-4 cursor-pointer hover:text-dashboardBlue">Name <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>                                 <th class="pb-4">Status</th>                                 <th class="pb-4 cursor-pointer hover:text-dashboardBlue">Type <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>                                 <th class="pb-4 cursor-pointer hover:text-dashboardBlue">Age <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>                                 <th class="pb-4">Track Application</th>                                 <th class="pb-4">Actions</th>                             </tr>                         </thead>                                                 <tbody class="text-gray-800 text-sm" id="applications-table-body">
+    <thead>                             <tr class="text-black font-bold text-sm border-b border-gray-200">                                 <th class="pb-4 pl-2">Application ID</th>                                 <th class="pb-4 cursor-pointer hover:text-dashboardBlue">Name <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>                                 <th class="pb-4">Status</th>                                 <th class="pb-4 cursor-pointer hover:text-dashboardBlue">Type <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>                                 <th class="pb-4 cursor-pointer hover:text-dashboardBlue">Age <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>                                 <th class="pb-4">Actions</th>                             </tr>                         </thead>                                                 <tbody class="text-gray-800 text-sm" id="applications-table-body">
                             <!-- Application rows will be loaded here by JavaScript -->
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-gray-500">Loading applications...</td>
+                                <td colspan="6" class="text-center py-4 text-gray-500">Loading applications...</td>
                             </tr>
                         </tbody>                     </table>                 </div>                                  <div id="pagination-controls" class="flex justify-between items-center mt-8 text-sm text-gray-600 border-t border-gray-100 pt-6">
                     <div id="pagination-summary">
@@ -137,7 +137,7 @@
             loadingOverlay.classList.remove('hidden');
 
             const applicationsTableBody = document.getElementById('applications-table-body');
-            applicationsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">Loading applications...</td></tr>`;
+            applicationsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Loading applications...</td></tr>`;
 
             let url = `../api/applications/list.php?page=${currentPage}&limit=${currentLimit}`;
             if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
@@ -150,7 +150,7 @@
                 if (!response.ok) {
                     const errorText = await response.text();
                     showErrorModal('HTTP Error fetching applications: ' + response.status + ' - ' + errorText.substring(0, 100) + '...', false, false);
-                    applicationsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load applications.</td></tr>`;
+                    applicationsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load applications.</td></tr>`;
                     return;
                 }
 
@@ -161,29 +161,48 @@
 
                     if (data.data.length > 0) {
                         data.data.forEach(app => {
+                            const color = app.status_color || '#6b7280';
                             const row = `
                                 <tr class="border-b border-gray-100 hover:bg-gray-50 transition h-16">
                                     <td class="pl-2">${app.application_number}</td>
                                     <td>${app.senior_name}</td>
-                                    <td>${app.status}</td>
+                                    <td><span style="background:${color};color:#fff;padding:6px 10px;border-radius:999px;font-size:12px">${app.status}</span></td>
                                     <td>${app.application_type}</td>
                                     <td>${app.age}</td>
-                                    <td>
-                                        <button class="px-4 py-1.5 border border-dashboardBlue text-dashboardBlue rounded text-xs font-medium hover:bg-indigo-50 transition">
-                                            ${app.status === 'Draft' ? 'Edit' : 'View Status'}
-                                        </button>
-                                    </td>
                                     <td class="text-dashboardBlue font-medium">
-                                        <a href="#" class="mr-3 hover:underline">View</a>
-                                        <a href="#" class="hover:underline">Delete</a>
+                                        <a href="application_view.php?id=${app.id}" class="mr-3 hover:underline">View</a>
+                                        <a href="#" data-id="${app.id}" class="delete-application hover:underline">Delete</a>
                                     </td>
                                 </tr>
                             `;
                             applicationsTableBody.innerHTML += row;
                         });
+                            // attach delete handler via delegation
+                            applicationsTableBody.querySelectorAll('.delete-application').forEach(el => {
+                                el.addEventListener('click', async function(ev) {
+                                    ev.preventDefault();
+                                    const id = this.getAttribute('data-id');
+                                    if (!confirm('Are you sure you want to delete this application? This cannot be undone.')) return;
+                                    try {
+                                        const res = await fetch('../api/applications/delete.php', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ id: id })
+                                        });
+                                        const json = await res.json();
+                                        if (json.success) {
+                                            fetchApplications();
+                                        } else {
+                                            showErrorModal('Failed to delete: ' + (json.message || 'Unknown'));
+                                        }
+                                    } catch (err) {
+                                        showErrorModal('Network error deleting application: ' + err.message);
+                                    }
+                                });
+                            });
                         updatePaginationControls(data.pagination.total, data.pagination.pages, data.pagination.page, data.pagination.limit);
                     } else {
-                        applicationsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No applications found.</td></tr>`;
+                        applicationsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No applications found.</td></tr>`;
                         updatePaginationControls(0, 0, 0, 0);
                     }
                 } else {
@@ -193,12 +212,12 @@
                         isDbConnected = false;
                     }
                     showErrorModal(apiMessage, isDbConnected, true);
-                    applicationsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load applications.</td></tr>`;
+                    applicationsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load applications.</td></tr>`;
                     updatePaginationControls(0, 0, 0, 0);
                 }
             } catch (error) {
                 console.error('Error fetching applications:', error);
-                applicationsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">Network or parsing error loading applications.</td></tr>`;
+                applicationsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Network or parsing error loading applications.</td></tr>`;
                 showErrorModal('Network or parsing error loading applications: ' + error.message, false, false);
                 updatePaginationControls(0, 0, 0, 0);
             } finally {

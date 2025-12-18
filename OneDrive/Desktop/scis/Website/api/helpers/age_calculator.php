@@ -73,7 +73,8 @@
     * File: api/helpers/benefit_calculator.php
     */
     class BenefitCalculator {
-        
+        // cache eligible benefit lookups for the current request to avoid repeated DB queries
+        private static $eligibleCache = [];
         /**
         * Calculate eligible benefits based on age and location
         * @param int $age Senior citizen's age
@@ -82,9 +83,8 @@
         */
         public static function calculateEligibleBenefits($age, $barangay_id) {
             global $db; // Assuming database connection is available
-            
             $benefit_ids = [];
-            
+
             // 1. BASIC BENEFITS (All senior citizens 60+)
             $basic_benefits = [
                 'SC-DISCOUNT-20',  // 20% discount on essentials
@@ -93,41 +93,58 @@
                 'SC-MEDICINE-20',  // 20% medicine discount
                 'SC-PRIORITY',     // Priority lane access
             ];
-            
+
             // 2. AGE-BASED PENSION (RA 11376 - Social Pension)
             if ($age >= 80 && $age <= 89) {
-                // Octogenarian: ₱500/month
                 $benefit_ids[] = 'PENSION-OCTOGENARIAN-500';
             }
-            
             if ($age >= 90 && $age <= 99) {
-                // Nonagenarian: ₱1,000/month (doubled from ₱500)
                 $benefit_ids[] = 'PENSION-NONAGENARIAN-1000';
             }
-            
             if ($age >= 100) {
-                // Centenarian: ₱10,000 one-time + ₱1,500/month
                 $benefit_ids[] = 'PENSION-CENTENARIAN-ONETIME-10000';
                 $benefit_ids[] = 'PENSION-CENTENARIAN-MONTHLY-1500';
             }
-            
-            // 3. Get benefit IDs from database
-            $query = "SELECT id FROM benefits WHERE code IN ('" . 
-                    implode("','", array_merge($basic_benefits, $benefit_ids)) . "')";
-            $stmt = $db->query($query);
-            $db_benefit_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            
-            // 4. Add barangay-specific benefits
-            $query = "SELECT id FROM benefits 
-                    WHERE is_barangay_specific = 1 
-                    AND barangay_id = :barangay_id 
-                    AND is_active = 1";
-            $stmt = $db->prepare($query);
-            $stmt->bindParam(':barangay_id', $barangay_id);
-            $stmt->execute();
-            $barangay_benefits = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            
-            return array_merge($db_benefit_ids, $barangay_benefits);
+
+            // Build lookup set and cache key
+            $codes = array_values(array_unique(array_merge($basic_benefits, $benefit_ids)));
+            $cacheKey = md5(json_encode(['codes' => $codes, 'barangay' => $barangay_id]));
+            if (isset(self::$eligibleCache[$cacheKey])) {
+                return self::$eligibleCache[$cacheKey];
+            }
+
+            try {
+                // If there are codes, include an IN clause; otherwise only use barangay-specific clause
+                if (!empty($codes)) {
+                    // Build named placeholders for the IN list
+                    $placeholders = [];
+                    $params = [];
+                    foreach ($codes as $i => $code) {
+                        $ph = ':c' . $i;
+                        $placeholders[] = $ph;
+                        $params[$ph] = $code;
+                    }
+
+                    $sql = "SELECT id FROM benefits WHERE is_active = 1 AND (code IN (" . implode(',', array_keys($params)) . ") OR (is_barangay_specific = 1 AND barangay_id = :barangay_id))";
+                    $stmt = $db->prepare($sql);
+                    foreach ($params as $ph => $val) $stmt->bindValue($ph, $val);
+                    $stmt->bindValue(':barangay_id', $barangay_id);
+                    $stmt->execute();
+                    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                } else {
+                    $sql = "SELECT id FROM benefits WHERE is_active = 1 AND is_barangay_specific = 1 AND barangay_id = :barangay_id";
+                    $stmt = $db->prepare($sql);
+                    $stmt->bindValue(':barangay_id', $barangay_id);
+                    $stmt->execute();
+                    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                }
+
+                self::$eligibleCache[$cacheKey] = $ids;
+                return $ids;
+            } catch (Exception $e) {
+                error_log("BenefitCalculator: benefits table missing or query failed: " . $e->getMessage());
+                return [];
+            }
         }
         
         /**
@@ -164,14 +181,19 @@
             global $db;
             
             // Get benefit frequency
-            $query = "SELECT frequency FROM benefits WHERE id = :benefit_id";
-            $stmt = $db->prepare($query);
-            $stmt->bindParam(':benefit_id', $benefit_id);
-            $stmt->execute();
-            $benefit = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$benefit) {
-                return ['can_claim' => false, 'reason' => 'Benefit not found'];
+            try {
+                $query = "SELECT frequency FROM benefits WHERE id = :benefit_id";
+                $stmt = $db->prepare($query);
+                $stmt->bindParam(':benefit_id', $benefit_id);
+                $stmt->execute();
+                $benefit = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$benefit) {
+                    return ['can_claim' => false, 'reason' => 'Benefit not found'];
+                }
+            } catch (Exception $e) {
+                error_log("BenefitCalculator.canClaimBenefit: benefits table missing or query failed: " . $e->getMessage());
+                return ['can_claim' => false, 'reason' => 'Benefits data unavailable'];
             }
             
             // Check last claim from benefit_history
@@ -210,32 +232,37 @@
         public static function getBenefitsWithStatus($senior_id) {
             global $db;
             
-            $query = "SELECT b.*, 
-                    seb.eligible_from, seb.eligible_until,
-                    bh.claimed_date as last_claimed,
-                    bh.next_eligible_date,
-                    CASE 
-                        WHEN bh.next_eligible_date IS NULL OR bh.next_eligible_date <= CURDATE() 
-                        THEN 1 ELSE 0 
-                    END as can_claim_now
-                    FROM benefits b
-                    JOIN senior_eligible_benefits seb ON b.id = seb.benefit_id
-                    LEFT JOIN benefit_history bh ON b.id = bh.benefit_id 
-                        AND bh.senior_id = seb.senior_id
-                        AND bh.claimed_date = (
-                        SELECT MAX(claimed_date) 
-                        FROM benefit_history 
-                        WHERE benefit_id = b.id AND senior_id = :senior_id
-                        )
-                    WHERE seb.senior_id = :senior_id
-                    AND b.is_active = 1
-                    ORDER BY b.type, b.name";
-            
-            $stmt = $db->prepare($query);
-            $stmt->bindParam(':senior_id', $senior_id);
-            $stmt->execute();
-            
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            try {
+                $query = "SELECT b.*, 
+                        seb.eligible_from, seb.eligible_until,
+                        bh.claimed_date as last_claimed,
+                        bh.next_eligible_date,
+                        CASE 
+                            WHEN bh.next_eligible_date IS NULL OR bh.next_eligible_date <= CURDATE() 
+                            THEN 1 ELSE 0 
+                        END as can_claim_now
+                        FROM benefits b
+                        JOIN senior_eligible_benefits seb ON b.id = seb.benefit_id
+                        LEFT JOIN benefit_history bh ON b.id = bh.benefit_id 
+                            AND bh.senior_id = seb.senior_id
+                            AND bh.claimed_date = (
+                            SELECT MAX(claimed_date) 
+                            FROM benefit_history 
+                            WHERE benefit_id = b.id AND senior_id = :senior_id
+                            )
+                        WHERE seb.senior_id = :senior_id
+                        AND b.is_active = 1
+                        ORDER BY b.type, b.name";
+                
+                $stmt = $db->prepare($query);
+                $stmt->bindParam(':senior_id', $senior_id);
+                $stmt->execute();
+                
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {
+                error_log("BenefitCalculator.getBenefitsWithStatus: benefits table missing or query failed: " . $e->getMessage());
+                return [];
+            }
         }
         
         /**
@@ -246,20 +273,25 @@
         public static function getNewBenefits($senior_id) {
             global $db;
             
-            $query = "SELECT b.*, seb.eligible_from
-                    FROM benefits b
-                    JOIN senior_eligible_benefits seb ON b.id = seb.benefit_id
-                    LEFT JOIN benefit_history bh ON b.id = bh.benefit_id 
-                        AND bh.senior_id = seb.senior_id
-                    WHERE seb.senior_id = :senior_id
-                    AND b.is_active = 1
-                    AND bh.id IS NULL
-                    ORDER BY seb.eligible_from DESC";
-            
-            $stmt = $db->prepare($query);
-            $stmt->bindParam(':senior_id', $senior_id);
-            $stmt->execute();
-            
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            try {
+                $query = "SELECT b.*, seb.eligible_from
+                        FROM benefits b
+                        JOIN senior_eligible_benefits seb ON b.id = seb.benefit_id
+                        LEFT JOIN benefit_history bh ON b.id = bh.benefit_id 
+                            AND bh.senior_id = seb.senior_id
+                        WHERE seb.senior_id = :senior_id
+                        AND b.is_active = 1
+                        AND bh.id IS NULL
+                        ORDER BY seb.eligible_from DESC";
+                
+                $stmt = $db->prepare($query);
+                $stmt->bindParam(':senior_id', $senior_id);
+                $stmt->execute();
+                
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {
+                error_log("BenefitCalculator.getNewBenefits: benefits table missing or query failed: " . $e->getMessage());
+                return [];
+            }
         }
     }

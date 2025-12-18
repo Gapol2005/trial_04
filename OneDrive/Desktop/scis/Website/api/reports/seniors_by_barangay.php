@@ -16,7 +16,7 @@
     $accessible_barangays = $auth->getAccessibleBarangays();
     $barangay_ids = implode(',', $accessible_barangays);
 
-    $query = "SELECT b.name as barangay, b.district,
+    $query = "SELECT b.name as barangay_name, b.district,
             COUNT(DISTINCT s.id) as total_seniors,
             COUNT(DISTINCT CASE WHEN s.gender_id = 1 THEN s.id END) as male_count,
             COUNT(DISTINCT CASE WHEN s.gender_id = 2 THEN s.id END) as female_count,

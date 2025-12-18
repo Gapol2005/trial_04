@@ -1,42 +1,47 @@
 <?php    
     class Response {
         public static function success($data = null, $message = "Success", $code = 200) {
-            http_response_code($code);
-            echo json_encode([
-                'success' => true,
-                'message' => $message,
-                'data' => $data,
-                'timestamp' => date('Y-m-d H:i:s')
-            ]);
-            exit();
+                // Clean any accidental output to guarantee valid JSON
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                http_response_code($code);
+                echo json_encode([
+                    'success' => true,
+                    'message' => $message,
+                    'data' => $data,
+                    'timestamp' => date('Y-m-d H:i:s')
+                ]);
+                exit();
         }
         
         public static function error($message = "Error", $code = 400, $errors = null) {
-            http_response_code($code);
-            echo json_encode([
-                'success' => false,
-                'message' => $message,
-                'errors' => $errors,
-                'timestamp' => date('Y-m-d H:i:s')
-            ]);
-            exit();
+                // Ensure no prior output interferes with JSON
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                http_response_code($code);
+                echo json_encode([
+                    'success' => false,
+                    'message' => $message,
+                    'errors' => $errors,
+                    'timestamp' => date('Y-m-d H:i:s')
+                ]);
+                exit();
         }
         
         public static function paginated($data, $page, $limit, $total, $message = "Success") {
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => $message,
-                'data' => $data,
-                'pagination' => [
-                    'page' => (int)$page,
-                    'limit' => (int)$limit,
-                    'total' => (int)$total,
-                    'pages' => ceil($total / $limit)
-                ],
-                'timestamp' => date('Y-m-d H:i:s')
-            ]);
-            exit();
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                http_response_code(200);
+                echo json_encode([
+                    'success' => true,
+                    'message' => $message,
+                    'data' => $data,
+                    'pagination' => [
+                        'page' => (int)$page,
+                        'limit' => (int)$limit,
+                        'total' => (int)$total,
+                        'pages' => ceil($total / $limit)
+                    ],
+                    'timestamp' => date('Y-m-d H:i:s')
+                ]);
+                exit();
         }
     }
 

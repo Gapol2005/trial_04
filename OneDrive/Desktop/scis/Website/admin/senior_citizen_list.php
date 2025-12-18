@@ -201,7 +201,7 @@
                                     <td class="py-4 pl-2 font-medium">${senior.osca_id}</td>
                                     <td class="py-4">${senior.first_name} ${senior.last_name}</td>
                                     <td class="py-4">${new Date(senior.birthdate).toLocaleDateString()}</td>
-                                    <td class="py-4">${senior.barangay_name}</td>
+                                    <td class="py-4">${senior.barangay || senior.barangay_name || 'undefined'}</td>
                                     <td class="py-4">${senior.is_active == 1 && senior.is_deceased == 0 ? '<span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Active</span>' : (senior.is_deceased == 1 ? '<span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Deceased</span>' : '<span class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Inactive</span>')}</td>
                                     <td class="py-4 text-center">
                                         <button class="px-4 py-1.5 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 transition text-xs font-semibold" onclick="editSenior(${senior.id})">Edit</button>

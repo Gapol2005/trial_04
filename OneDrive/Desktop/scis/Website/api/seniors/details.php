@@ -45,7 +45,7 @@ try {
         s.registration_status_id, s.registered_by, s.photo_path, s.thumbmark_verified,
         s.is_active, s.is_deceased, s.deceased_date, s.created_at, s.updated_at,
         g.name as gender,
-        b.name as barangay, b.district, b.code as barangay_code,
+        b.name as barangay_name, b.district, b.code as barangay_code,
         br.name as branch, br.code as branch_code,
         rs.name as status, rs.color_code as status_color,
         edu.level as education,
