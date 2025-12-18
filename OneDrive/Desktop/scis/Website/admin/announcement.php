@@ -84,7 +84,7 @@
     <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-auto">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-red-600">Error!</h3>
+                <h3 class="text-xl font-bold text-red-600">Success!</h3>
                 <button id="close-error-modal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             <div class="text-gray-700 mb-4">

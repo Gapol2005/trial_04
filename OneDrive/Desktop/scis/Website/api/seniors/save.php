@@ -10,7 +10,33 @@
     $auth = new AuthMiddleware($db);
     if (!$auth->authenticate()) exit;
 
-    $data = json_decode(file_get_contents("php://input"));
+    $rawInput = file_get_contents("php://input");
+    $data = json_decode($rawInput);
+    // Fallback: if request was sent as multipart/form-data (FormData/POST), php://input
+    // may not contain JSON. Convert $_POST to an object in that case so the same
+    // logic works for both JSON and regular form submissions.
+    if ($data === null) {
+        // Convert nested arrays to objects
+        $data = json_decode(json_encode($_POST));
+    }
+
+    // Helper: convert empty or non-numeric values to null for FK fields
+    function getNullInt($val) {
+        if (!isset($val)) return null;
+        if ($val === '') return null;
+        if (is_numeric($val)) return (int)$val;
+        return null;
+    }
+
+    // Normalize commonly used numeric fields to avoid foreign key constraint issues
+    $normalized = new stdClass();
+    $normalized->educational_attainment_id = getNullInt($data->educational_attainment_id ?? null);
+    $normalized->socioeconomic_status_id = getNullInt($data->socioeconomic_status_id ?? null);
+    $normalized->mobility_level_id = getNullInt($data->mobility_level_id ?? null);
+    $normalized->gender_id = getNullInt($data->gender_id ?? null);
+    $normalized->barangay_id = getNullInt($data->barangay_id ?? null);
+    $normalized->contact_id = getNullInt($data->contact_id ?? null);
+    $normalized->monthly_salary = (isset($data->monthly_salary) && $data->monthly_salary !== '') ? $data->monthly_salary : null;
     $is_update = isset($data->id) && $data->id > 0;
 
     $permission = $is_update ? 'can_edit' : 'can_create';
@@ -263,14 +289,14 @@
                     ':last_name' => $data->last_name,
                     ':extension' => $data->extension ?? null,
                     ':birthdate' => $data->birthdate,
-                    ':gender_id' => $data->gender_id,
-                    ':barangay_id' => $data->barangay_id,
-                    ':education' => $data->educational_attainment_id ?? null,
-                    ':salary' => $data->monthly_salary ?? null,
+                    ':gender_id' => $normalized->gender_id,
+                    ':barangay_id' => $normalized->barangay_id,
+                    ':education' => $normalized->educational_attainment_id,
+                    ':salary' => $normalized->monthly_salary,
                     ':occupation' => $data->occupation ?? null,
                     ':skills' => $data->other_skills ?? null,
-                    ':socioeconomic' => $data->socioeconomic_status_id ?? null,
-                    ':mobility' => $data->mobility_level_id ?? null,
+                    ':socioeconomic' => $normalized->socioeconomic_status_id,
+                    ':mobility' => $normalized->mobility_level_id,
                     ':contact_id' => $contact_id,
                     ':id' => $data->id
                 ]);
@@ -323,15 +349,15 @@
                 ':last_name' => $data->last_name,
                 ':extension' => $data->extension ?? null,
                 ':birthdate' => $data->birthdate,
-                ':gender_id' => $data->gender_id,
-                ':barangay_id' => $data->barangay_id,
+                ':gender_id' => $normalized->gender_id,
+                ':barangay_id' => $normalized->barangay_id,
                 ':contact_id' => $contact_id,
-                ':education' => $data->educational_attainment_id ?? null,
-                ':salary' => $data->monthly_salary ?? null,
+                ':education' => $normalized->educational_attainment_id,
+                ':salary' => $normalized->monthly_salary,
                 ':occupation' => $data->occupation ?? null,
                 ':skills' => $data->other_skills ?? null,
-                ':socioeconomic' => $data->socioeconomic_status_id ?? null,
-                ':mobility' => $data->mobility_level_id ?? null,
+                ':socioeconomic' => $normalized->socioeconomic_status_id,
+                ':mobility' => $normalized->mobility_level_id,
                 ':user_id' => $auth->getUserId(),
                 ':branch_id' => $auth->getBranchId()
             ]);

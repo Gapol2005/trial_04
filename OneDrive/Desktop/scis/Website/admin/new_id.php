@@ -74,7 +74,7 @@
                         <input type="text" id="first_name" name="first_name" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-brandBlue focus:border-brandBlue text-sm" required>
                     </div>
                     <div>
-                        <label for="middle_name" class="block text-sm font-medium text-gray-700 mb-1">Middle Name/Middle Initial <span class="text-orange-500">*</span></label>
+                        <label for="middle_name" class="block text-sm font-medium text-gray-700 mb-1">Middle Name/Middle Initial</label>
                         <input type="text" id="middle_name" name="middle_name" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-brandBlue focus:border-brandBlue text-sm">
                     </div>
                     <div class="md:col-span-2">
@@ -107,13 +107,13 @@
                     <div class="md:col-span-4">
                             <label class="block text-sm font-semibold mb-2 text-black">Date of Birth <span class="text-orange-500">*</span></label>
                             <div class="relative">
-                                <input type="date" placeholder="dd / mm / yy" class="w-full border border-gray-300 rounded-md p-3 text-gray-500">
+                                <input type="date" id="birthdate" name="birthdate" placeholder="dd / mm / yy" class="w-full border border-gray-300 rounded-md p-3 text-gray-500">
                                 <div class="absolute inset-y-0 right-0 flex items-center px-3 text-black text-lg"></div>
                             </div>
                     </div>
                     <div class="md:col-span-2">
                         <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age <span class="text-orange-500">*</span></label>
-                        <input type="text" id="age" name="age" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-brandBlue focus:border-brandBlue text-sm" required>
+                        <input type="text" id="age" name="age" readonly class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-brandBlue focus:border-brandBlue text-sm bg-gray-100" required>
                     </div>
 
                     <div>
@@ -310,7 +310,7 @@
 
             <div class="flex justify-between mt-8">
                 <button type="button" id="prev-step-btn" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-md font-semibold text-sm hover:bg-gray-400 transition hidden">Previous</button>
-                <button type="button" id="next-step-btn" class="bg-brandBlue text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-800 transition">Next</button>
+                <button type="button" id="next-step-btn" class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-blue-700 transition">Next</button>
                 <button type="submit" id="submit-btn" class="bg-green-600 text-white px-6 py-2 rounded-md font-semibold text-sm hover:bg-green-700 transition hidden">Register Senior</button>
             </div>
             <div id="form-error-message" class="text-red-500 text-sm mt-4"></div>
@@ -330,6 +330,23 @@
         const genderSelect = document.getElementById('gender_id');
         const educationalAttainmentSelect = document.getElementById('educational_attainment_id');
         const barangaySelect = document.getElementById('barangay_id');
+
+        // Compute age from birthdate and populate the `age` field
+        function computeAge() {
+            const birthEl = document.getElementById('birthdate');
+            const ageEl = document.getElementById('age');
+            if (!birthEl || !ageEl) return;
+            const val = birthEl.value;
+            if (!val) { ageEl.value = ''; return; }
+            const birth = new Date(val);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            ageEl.value = age >= 0 ? age : '';
+        }
 
         document.addEventListener('DOMContentLoaded', async function() {
             loadingOverlay.classList.remove('hidden'); // Show spinner on page load
@@ -357,7 +374,16 @@
             
             loadingOverlay.classList.add('hidden'); // Hide spinner after initial data load
 
+            // Wire birthdate change to auto-calculate age and compute initial value if present
+            const birthInput = document.getElementById('birthdate');
+            if (birthInput) {
+                birthInput.addEventListener('change', computeAge);
+            }
+
             showStep(currentStep);
+
+            // If a birthdate was already filled (edit mode), compute age
+            if (birthInput && birthInput.value) computeAge();
         });
 
         async function fetchAndPopulateDropdown(apiEndpoint, selectElement, defaultOptionText) {
@@ -391,7 +417,8 @@
                     document.getElementById('last_name').value = senior.last_name;
                     document.getElementById('extension').value = senior.extension;
                     document.getElementById('birthdate').value = senior.birthdate;
-                    document.getElementById('age').value = senior.age;
+                    // compute age on client side from birthdate
+                    computeAge();
                     document.getElementById('gender_id').value = senior.gender_id;
 
                     // Contact info
@@ -591,7 +618,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
                     <div><label class="block text-sm font-bold mb-2 text-black">First Name <span class="text-orange-500">*</span></label><input type="text" name="family_first_name[]" class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 h-12" required></div>
-                    <div><label class="block text-sm font-bold mb-2 text-black">Middle Name/Middle Initial <span class="text-orange-500">*</span></label><input type="text" name="family_middle_name[]" class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 h-12" required></div>
+                    <div><label class="block text-sm font-bold mb-2 text-black">Middle Name/Middle Initial</label><input type="text" name="family_middle_name[]" class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 h-12"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-5">
                     <div class="md:col-span-2"><label class="block text-sm font-bold mb-2 text-black">Last Name <span class="text-orange-500">*</span></label><input type="text" name="family_last_name[]" class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 h-12" required></div>

@@ -61,16 +61,16 @@
     if ($age_group) {
         switch($age_group) {
             case 'septuagenarian':
-                $where_clauses[] = "s.age BETWEEN 70 AND 79";
+                $where_clauses[] = "TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) BETWEEN 70 AND 79";
                 break;
             case 'octogenarian':
-                $where_clauses[] = "s.age BETWEEN 80 AND 89";
+                $where_clauses[] = "TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) BETWEEN 80 AND 89";
                 break;
             case 'nonagenarian':
-                $where_clauses[] = "s.age BETWEEN 90 AND 99";
+                $where_clauses[] = "TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) BETWEEN 90 AND 99";
                 break;
             case 'centenarian':
-                $where_clauses[] = "s.age >= 100";
+                $where_clauses[] = "TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) >= 100";
                 break;
         }
     }
@@ -96,8 +96,8 @@
     $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
     // Data query
-    $query = "SELECT s.id, s.osca_id, s.first_name, s.middle_name, s.last_name, 
-            s.extension, s.age, s.birthdate, g.name as gender, b.name as barangay,
+        $query = "SELECT s.id, s.osca_id, s.first_name, s.middle_name, s.last_name, 
+            s.extension, TIMESTAMPDIFF(YEAR, s.birthdate, CURDATE()) AS age, s.birthdate, g.name as gender, b.name as barangay,
             br.name as branch, rs.name as status, s.registration_date,
             c.mobile_number, c.email
             FROM senior_citizens s

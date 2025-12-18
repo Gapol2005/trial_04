@@ -100,6 +100,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <a href="registration_category.php" class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-800 bg-white">Application List</a>
                         <span class="text-sm text-gray-600">Show</span>
                         <select class="p-2 border border-gray-300 rounded text-sm">
                             <option>10</option>
